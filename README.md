@@ -1,16 +1,8 @@
-# musiscape
+# Musiscape
 
-A toolbox for analysing **music collections**. Existing tools answer *"what
-is this track?"* — musiscape answers **"what is this collection?"**: how its
-albums differ, which tracks resemble which, how internally consistent each
-album is, where the outliers live, and what categories the corpus falls
-into — with every number carrying a musical name.
+A toolbox for analysing music collections in the form of audio files in folders. The aim is to provide tools to visualise many tracks so you can compare them. It can help answer questions about how albums differ, which tracks resemble which, how internally consistent each album is, where the outliers live, and what categories the corpus falls into.
 
-Sibling of [ambiscape](https://github.com/fourMs/ambiscape) (soundscapes),
-reusing its circular-statistics and Schaeffer typology machinery
-(`ambiscape.music`): pulse clarity for rubato-heavy material where BPM
-fails, tonal centers on the circle of fifths, and object-level TARTYP
-profiles.
+Musiscape is a sibling of [ambiscape](https://github.com/fourMs/ambiscape), which is focused on analysing *soundscapes* (including those with some music being played). The toolboxes share some analysis types, including circular statistics and Pierre Schaeffer-inspired typology machinery (`ambiscape.music`), tonal centres on the circle of fifths, and object-level TARSOM (*Tableau rècapitulatif du solfège des objets musicaux*) and TARTYP (*Tableau rècapitulatif de la typologie*).
 
 ## Install
 
@@ -52,14 +44,9 @@ corpus.tonal_spread(f)     # key-space clustering per album (circular)
 categorize.cluster(f)      # interpretable categories
 ```
 
-## Honesty
+## Combine with listening
 
-Features are interpretable signal proxies — a deliberate trade against
-embedding models: weaker raw similarity, but every axis can be argued
-about. Key estimates are Krumhansl–Schmuckler correlations (indicative for
-drones); pulse clarity conflates slow tempo drift with rubato; TARTYP
-classes are corpus-calibrated proxies for aural categories. Treat every
-category as a draft for listening, not a verdict.
+This toolbox is meant for quick visualisations and overviews. Combine it with listening!
 
 ## License
 
