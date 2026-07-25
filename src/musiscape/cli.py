@@ -29,7 +29,7 @@ def main(argv=None):
     p.add_argument("-k", type=int, help="number of categories (default: auto)")
     p.add_argument("--style", default="mel",
                    help="thumbnail style: mel|chroma|tempo|combo|barcode|"
-                        "ssm|trajectory|keyscape|rhythm (default mel)")
+                        "ssm|trajectory|keyscape|rhythm|wave (default mel)")
     args = p.parse_args(argv)
 
     coll = open_collection(args.folder)

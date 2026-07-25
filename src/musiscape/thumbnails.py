@@ -14,7 +14,10 @@ Each track becomes one card, in a choice of representations:
   scale colored by its Krumhansl–Schmuckler key (hue = tonic on the circle
   of fifths, light = major, dark = minor);
 - ``rhythm`` — Poincaré portrait of successive inter-onset intervals:
-  metric playing collapses to points, rubato spreads into clouds.
+  metric playing collapses to points, rubato spreads into clouds;
+- ``wave`` — Freesound-style waveform: the amplitude envelope with each
+  moment colored by its spectral centroid (dark blue = dark timbre,
+  red = bright), so timbre rides on the waveform itself.
 
 Albums additionally get a contact sheet, and :func:`poster` stacks every
 track's barcode into a single collection image where albums read as color
@@ -36,7 +39,7 @@ from .io import Collection, Track, load
 
 #: available card styles
 STYLES = ("mel", "chroma", "tempo", "combo",
-          "barcode", "ssm", "trajectory", "keyscape", "rhythm")
+          "barcode", "ssm", "trajectory", "keyscape", "rhythm", "wave")
 #: taller cards for the square-ish representations
 _TALL = {"combo": 5.4, "ssm": 5.2, "trajectory": 5.2, "keyscape": 5.2,
          "rhythm": 5.2}
@@ -159,6 +162,24 @@ def _draw_main(ax, y, sr, style):
         ax.imshow(keyscape_rgb(C), aspect="auto", origin="upper",
                   interpolation="nearest")
 
+    elif style == "wave":
+        hop = 512
+        cent = librosa.feature.spectral_centroid(y=y, sr=sr,
+                                                 hop_length=hop)[0]
+        cols = 1200
+        step = max(1, len(y) // cols)
+        env = np.abs(y[: len(y) // step * step]).reshape(-1, step).max(axis=1)
+        ci = np.interp(np.linspace(0, len(cent) - 1, len(env)),
+                       np.arange(len(cent)), cent)
+        norm = np.clip((np.log2(ci + 1e-9) - np.log2(300))
+                       / (np.log2(4000) - np.log2(300)), 0, 1)
+        colors = matplotlib.colormaps["turbo"](norm)
+        ax.bar(np.arange(len(env)), 2 * env, bottom=-env, width=1.0,
+               color=colors, linewidth=0)
+        ax.set_xlim(0, len(env))
+        m = env.max() * 1.05 + 1e-9
+        ax.set_ylim(-m, m)
+
     elif style == "rhythm":
         from ambiscape.music import ONSET_FLOOR
         env = librosa.onset.onset_strength(y=y, sr=sr)
@@ -189,16 +210,20 @@ def render_track(track: Track, color: str, out_path: str | Path,
         y, sr = load(track, sr=sr)
         spectro = style in ("mel", "chroma", "tempo", "combo")
         panels = _panels(y, sr, style) if spectro else [(style, None, None)]
+        has_strip = style != "wave"
         hop = max(1, len(y) // 1200)
         env = np.abs(y[: len(y) // hop * hop]).reshape(-1, hop).max(axis=1)
 
         heights = {"mel": 4.2, "chroma": 2.4, "tempo": 2.4}
         ratios = ([heights[n] for n, _, _ in panels] if spectro
-                  else [4.2 if style == "barcode" else 6.0]) + [1.0]
+                  else [4.2 if style in ("barcode", "wave") else 6.0])
+        if has_strip:
+            ratios = ratios + [1.0]
         fig_h = _TALL.get(style, 3.6)
         fig = plt.figure(figsize=(6.4, fig_h), dpi=100)
         top = 0.905 if fig_h > 4 else 0.86
-        gs = fig.add_gridspec(len(panels) + 1, 1, height_ratios=ratios,
+        gs = fig.add_gridspec(len(panels) + int(has_strip), 1,
+                              height_ratios=ratios,
                               left=0.015, right=0.985, top=top, bottom=0.05,
                               hspace=0.10)
         for i, (name, M, vmin) in enumerate(panels):
@@ -217,13 +242,14 @@ def render_track(track: Track, color: str, out_path: str | Path,
                 ax.tick_params(labelsize=6, colors=MUT)
             for s in ax.spines.values():
                 s.set_visible(False)
-        ax1 = fig.add_subplot(gs[-1])
-        x = np.arange(len(env))
-        ax1.fill_between(x, -env, env, color=color, linewidth=0)
-        ax1.set_xlim(0, len(env))
-        ax1.set_xticks([]); ax1.set_yticks([])
-        for s in ax1.spines.values():
-            s.set_visible(False)
+        if has_strip:
+            ax1 = fig.add_subplot(gs[-1])
+            x = np.arange(len(env))
+            ax1.fill_between(x, -env, env, color=color, linewidth=0)
+            ax1.set_xlim(0, len(env))
+            ax1.set_xticks([]); ax1.set_yticks([])
+            for s in ax1.spines.values():
+                s.set_visible(False)
 
         dur = len(y) / sr
         ty = 0.97 if fig_h > 4 else 0.955
