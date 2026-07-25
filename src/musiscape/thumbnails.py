@@ -18,9 +18,10 @@ Each track becomes one card, in a choice of representations:
 - ``wave`` — Freesound-style waveform: the amplitude envelope with each
   moment colored by its spectral centroid (dark blue = dark timbre,
   red = bright), so timbre rides on the waveform itself;
-- ``vinyl`` — the Freesound-style waveform bent into one revolution
-  (12 o'clock = start, clockwise; radial amplitude = loudness, color =
-  spectral brightness): the track as a disc glyph;
+- ``vinyl`` — the track as a tonality disc (12 o'clock = start,
+  clockwise; hue = harmony on the circle of fifths, radius = loudness),
+  with the Freesound-style centroid-colored waveform as the strip
+  underneath;
 - ``spiral`` — time-integrated energy on the Shepard helix (angle = pitch
   class, radius = octave): the only view that shows register;
 - ``tonnetz`` — the harmony's path on the circle-of-fifths plane of the
@@ -221,12 +222,13 @@ def _draw_main(ax, y, sr, style, color="#2a78d6"):
                   interpolation="nearest")
 
     elif style == "vinyl":
-        env, colors = wave_colors(y, sr, cols=1440)
-        n = len(env)
+        C, _, rms = _feats_2hz(y, sr)
+        rgb = barcode_rgb(C, rms)
+        n = len(rgb)
         theta = np.linspace(0, 2 * np.pi, n, endpoint=False)
-        amp = 0.55 * env
-        ax.bar(theta, 2 * amp, width=2 * np.pi / n * 1.5, bottom=1.0 - amp,
-               color=colors, linewidth=0)
+        loud = np.clip(rms / (np.percentile(rms, 95) + 1e-9), 0.15, 1)
+        ax.bar(theta, 0.45 + 0.55 * loud, width=2 * np.pi / n * 1.5,
+               bottom=0.55, color=rgb, linewidth=0)
         ax.set_theta_zero_location("N"); ax.set_theta_direction(-1)
         ax.set_ylim(0, 1.6)
         ax.spines["polar"].set_visible(False)
@@ -401,9 +403,16 @@ def render_track(track: Track, color: str, out_path: str | Path,
                     s.set_visible(False)
         if has_strip:
             ax1 = fig.add_subplot(gs[-1])
-            x = np.arange(len(env))
-            ax1.fill_between(x, -env, env, color=color, linewidth=0)
-            ax1.set_xlim(0, len(env))
+            if style == "vinyl":
+                wenv, wcolors = wave_colors(y, sr)
+                ax1.bar(np.arange(len(wenv)), 2 * wenv, bottom=-wenv,
+                        width=1.0, color=wcolors, linewidth=0)
+                ax1.set_xlim(0, len(wenv))
+                ax1.set_ylim(-1.05, 1.05)
+            else:
+                x = np.arange(len(env))
+                ax1.fill_between(x, -env, env, color=color, linewidth=0)
+                ax1.set_xlim(0, len(env))
             ax1.set_xticks([]); ax1.set_yticks([])
             for s in ax1.spines.values():
                 s.set_visible(False)
@@ -503,9 +512,10 @@ def _disc_work(job):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             y, sr = load(t)
-            env, colors = wave_colors(y, sr, cols=720)
+            C, _, rms = _feats_2hz(y, sr)
         print(f"[{album}] {t.title}", flush=True)
-        return album, t.title, colors, env
+        return album, t.title, barcode_rgb(C, rms), np.clip(
+            rms / (np.percentile(rms, 95) + 1e-9), 0.15, 1)
     except Exception as e:                                # noqa: BLE001
         print(f"ERROR {path}: {e}", flush=True)
         return None
@@ -536,14 +546,13 @@ def _vinyl_poster(coll: Collection, out_dir: Path, workers: int) -> Path:
             d = discs.get((a.name, t.title))
             if d is None:
                 continue
-            colors_d, env = d
+            rgb, loud = d
             ax = fig.add_subplot(gs[row + k // cols, k % cols],
                                  projection="polar")
-            n = len(env)
+            n = len(rgb)
             theta = np.linspace(0, 2 * np.pi, n, endpoint=False)
-            amp = 0.55 * env
-            ax.bar(theta, 2 * amp, width=2 * np.pi / n * 1.5,
-                   bottom=1.0 - amp, color=colors_d, linewidth=0)
+            ax.bar(theta, 0.45 + 0.55 * loud, width=2 * np.pi / n * 1.5,
+                   bottom=0.55, color=rgb, linewidth=0)
             ax.set_theta_zero_location("N"); ax.set_theta_direction(-1)
             ax.set_ylim(0, 1.6)
             ax.set_xticks([]); ax.set_yticks([])
