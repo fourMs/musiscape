@@ -27,6 +27,9 @@ def main(argv=None):
     p.add_argument("--duration", type=float,
                    help="analyse only the first N seconds per track")
     p.add_argument("-k", type=int, help="number of categories (default: auto)")
+    p.add_argument("--style", default="mel",
+                   choices=["mel", "chroma", "tempo", "combo"],
+                   help="thumbnail style (default mel)")
     args = p.parse_args(argv)
 
     coll = open_collection(args.folder)
@@ -40,7 +43,8 @@ def main(argv=None):
             notes = thumbnails.notes_from_features(
                 features.load_features(fpath))
         print(thumbnails.render_collection(coll, out, notes=notes,
-                                           workers=args.workers))
+                                           workers=args.workers,
+                                           style=args.style))
         return
 
     if args.verb == "probe":
