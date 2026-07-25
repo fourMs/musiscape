@@ -18,8 +18,9 @@ Each track becomes one card, in a choice of representations:
 - ``wave`` — Freesound-style waveform: the amplitude envelope with each
   moment colored by its spectral centroid (dark blue = dark timbre,
   red = bright), so timbre rides on the waveform itself;
-- ``vinyl`` — the barcode bent into one revolution (12 o'clock = start,
-  clockwise; hue = harmony, radius = loudness): the track as a disc glyph;
+- ``vinyl`` — the Freesound-style waveform bent into one revolution
+  (12 o'clock = start, clockwise; radial amplitude = loudness, color =
+  spectral brightness): the track as a disc glyph;
 - ``spiral`` — time-integrated energy on the Shepard helix (angle = pitch
   class, radius = octave): the only view that shows register;
 - ``tonnetz`` — the harmony's path on the circle-of-fifths plane of the
@@ -86,6 +87,19 @@ def barcode_rgb(C, rms):
     val = np.clip(rms / (np.percentile(rms, 95) + 1e-9), 0.12, 1) ** 0.6
     return np.array([colorsys.hsv_to_rgb(h, s, v)
                      for h, s, v in zip(hue, sat, val)])
+
+
+def wave_colors(y, sr, cols=1200):
+    """Amplitude envelope + turbo-mapped spectral-centroid colors."""
+    import librosa
+    cent = librosa.feature.spectral_centroid(y=y, sr=sr, hop_length=512)[0]
+    step = max(1, len(y) // cols)
+    env = np.abs(y[: len(y) // step * step]).reshape(-1, step).max(axis=1)
+    ci = np.interp(np.linspace(0, len(cent) - 1, len(env)),
+                   np.arange(len(cent)), cent)
+    norm = np.clip((np.log2(ci + 1e-9) - np.log2(300))
+                   / (np.log2(4000) - np.log2(300)), 0, 1)
+    return env / (env.max() + 1e-9), matplotlib.colormaps["turbo"](norm)
 
 
 def _key_profiles():
@@ -207,13 +221,12 @@ def _draw_main(ax, y, sr, style, color="#2a78d6"):
                   interpolation="nearest")
 
     elif style == "vinyl":
-        C, _, rms = _feats_2hz(y, sr)
-        rgb = barcode_rgb(C, rms)
-        n = len(rgb)
+        env, colors = wave_colors(y, sr, cols=1440)
+        n = len(env)
         theta = np.linspace(0, 2 * np.pi, n, endpoint=False)
-        loud = np.clip(rms / (np.percentile(rms, 95) + 1e-9), 0.15, 1)
-        ax.bar(theta, 0.45 + 0.55 * loud, width=2 * np.pi / n * 1.5,
-               bottom=0.55, color=rgb, linewidth=0)
+        amp = 0.55 * env
+        ax.bar(theta, 2 * amp, width=2 * np.pi / n * 1.5, bottom=1.0 - amp,
+               color=colors, linewidth=0)
         ax.set_theta_zero_location("N"); ax.set_theta_direction(-1)
         ax.set_ylim(0, 1.6)
         ax.spines["polar"].set_visible(False)
@@ -280,22 +293,11 @@ def _draw_main(ax, y, sr, style, color="#2a78d6"):
         ax.set_xlim(0, len(env)); ax.set_ylim(0, 1.02)
 
     elif style == "wave":
-        hop = 512
-        cent = librosa.feature.spectral_centroid(y=y, sr=sr,
-                                                 hop_length=hop)[0]
-        cols = 1200
-        step = max(1, len(y) // cols)
-        env = np.abs(y[: len(y) // step * step]).reshape(-1, step).max(axis=1)
-        ci = np.interp(np.linspace(0, len(cent) - 1, len(env)),
-                       np.arange(len(cent)), cent)
-        norm = np.clip((np.log2(ci + 1e-9) - np.log2(300))
-                       / (np.log2(4000) - np.log2(300)), 0, 1)
-        colors = matplotlib.colormaps["turbo"](norm)
+        env, colors = wave_colors(y, sr)
         ax.bar(np.arange(len(env)), 2 * env, bottom=-env, width=1.0,
                color=colors, linewidth=0)
         ax.set_xlim(0, len(env))
-        m = env.max() * 1.05 + 1e-9
-        ax.set_ylim(-m, m)
+        ax.set_ylim(-1.05, 1.05)
 
     elif style == "rhythm":
         from ambiscape.music import ONSET_FLOOR
@@ -501,10 +503,9 @@ def _disc_work(job):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             y, sr = load(t)
-            C, _, rms = _feats_2hz(y, sr)
+            env, colors = wave_colors(y, sr, cols=720)
         print(f"[{album}] {t.title}", flush=True)
-        return album, t.title, barcode_rgb(C, rms), np.clip(
-            rms / (np.percentile(rms, 95) + 1e-9), 0.15, 1)
+        return album, t.title, colors, env
     except Exception as e:                                # noqa: BLE001
         print(f"ERROR {path}: {e}", flush=True)
         return None
@@ -535,13 +536,14 @@ def _vinyl_poster(coll: Collection, out_dir: Path, workers: int) -> Path:
             d = discs.get((a.name, t.title))
             if d is None:
                 continue
-            rgb, loud = d
+            colors_d, env = d
             ax = fig.add_subplot(gs[row + k // cols, k % cols],
                                  projection="polar")
-            n = len(rgb)
+            n = len(env)
             theta = np.linspace(0, 2 * np.pi, n, endpoint=False)
-            ax.bar(theta, 0.45 + 0.55 * loud, width=2 * np.pi / n * 1.5,
-                   bottom=0.55, color=rgb, linewidth=0)
+            amp = 0.55 * env
+            ax.bar(theta, 2 * amp, width=2 * np.pi / n * 1.5,
+                   bottom=1.0 - amp, color=colors_d, linewidth=0)
             ax.set_theta_zero_location("N"); ax.set_theta_direction(-1)
             ax.set_ylim(0, 1.6)
             ax.set_xticks([]); ax.set_yticks([])
