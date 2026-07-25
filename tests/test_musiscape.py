@@ -54,7 +54,8 @@ def test_thumbnails(collection_dir, tmp_path):
 
 @pytest.mark.parametrize("style", ["barcode", "ssm", "trajectory",
                                    "keyscape", "rhythm", "combo", "wave",
-                                   "vinyl", "spiral", "tonnetz", "arcs"])
+                                   "vinyl", "spiral", "tonnetz", "arcs",
+                                   "schaeffer"])
 def test_thumbnail_styles(collection_dir, tmp_path, style):
     from musiscape import thumbnails
     coll = musiscape.open_collection(collection_dir)

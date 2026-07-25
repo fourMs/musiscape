@@ -29,6 +29,12 @@ Each track becomes one card, in a choice of representations:
 - ``arcs`` — Shape-of-Song-style arc diagram: repeated sections found in
   the self-similarity structure joined by arcs over the timeline.
 
+- ``schaeffer`` — the track's sound objects on a typo-morphology
+  timeline: three mass lanes (N tonic / Y variable / X complex), facture
+  as mark style (impulse ticks, hatched iterations, solid held blocks),
+  with a TARTYP-grid fingerprint inset. Uses the same signal proxies and
+  thresholds as ``ambiscape.music.tartyp_profile``.
+
 The ``rhythm`` card carries a beat-wheel inset: onset phases on the
 dominant-period circle with the pulse-clarity resultant arrow.
 
@@ -53,11 +59,11 @@ from .io import Collection, Track, load
 #: available card styles
 STYLES = ("mel", "chroma", "tempo", "combo", "barcode", "ssm",
           "trajectory", "keyscape", "rhythm", "wave",
-          "vinyl", "spiral", "tonnetz", "arcs")
+          "vinyl", "spiral", "tonnetz", "arcs", "schaeffer")
 #: taller cards for the square-ish representations
 _TALL = {"combo": 5.4, "ssm": 5.2, "trajectory": 5.2, "keyscape": 5.2,
          "rhythm": 5.2, "vinyl": 5.6, "spiral": 5.6, "tonnetz": 5.2,
-         "arcs": 4.4}
+         "arcs": 4.4, "schaeffer": 4.4}
 
 _FIFTHS = 2 * np.pi * (7 * np.arange(12) % 12) / 12
 
@@ -156,6 +162,64 @@ def _panels(y, sr, style):
         bpm = librosa.tempo_frequencies(T.shape[0], sr=sr)
         out.append(("tempo", T[(bpm >= 30) & (bpm <= 300)], 0.0))
     return out
+
+
+def _schaeffer_objects(y, sr, hop=512):
+    """Onset-bounded sound objects with (t0, t1, mass, facture).
+
+    The object-level detail behind ``ambiscape.music.tartyp_profile`` —
+    same segmentation, same corpus-calibrated thresholds (imported from
+    ambiscape), but keeping every object rather than the aggregate."""
+    import librosa
+    from ambiscape.music import (ONSET_FLOOR, TARTYP_COMPLEX, TARTYP_DRIFT,
+                                 TARTYP_IMPULSE_S, TARTYP_ITER, TARTYP_TONIC)
+    S = np.abs(librosa.stft(y, n_fft=2048, hop_length=hop))
+    flat = librosa.feature.spectral_flatness(S=S)[0]
+    cent = librosa.feature.spectral_centroid(S=S, sr=sr)[0]
+    fine_hop = hop // 8
+    fine = librosa.feature.rms(y=y, frame_length=fine_hop * 4,
+                               hop_length=fine_hop)[0]
+    fine_rate = sr / fine_hop
+    frame_t = hop / sr
+    env = librosa.onset.onset_strength(S=librosa.amplitude_to_db(S), sr=sr)
+    peaks = librosa.onset.onset_detect(onset_envelope=env, sr=sr,
+                                       hop_length=hop, units="frames")
+    peaks = peaks[env[peaks] >= ONSET_FLOOR]
+    onsets = (librosa.onset.onset_backtrack(peaks, env)
+              if len(peaks) else peaks)
+    bounds = np.unique(np.concatenate([[0], onsets, [S.shape[1]]]))
+
+    def iter_ratio(a, b):
+        seg = fine[int(a * hop / fine_hop):int(b * hop / fine_hop)]
+        seg = seg - seg.mean()
+        if len(seg) < 16 or not np.any(seg):
+            return 0.0
+        spec = np.abs(np.fft.rfft(seg * np.hanning(len(seg)))) ** 2
+        fq = np.fft.rfftfreq(len(seg), 1 / fine_rate)
+        tot = spec[fq > 0.2].sum()
+        return float(spec[(fq >= 4) & (fq < 20)].sum() / tot) if tot else 0.0
+
+    objects = []
+    for a, b in zip(bounds[:-1], bounds[1:]):
+        dur = (b - a) * frame_t
+        if dur < 0.05:
+            continue
+        fmed = float(np.median(flat[a:b]))
+        drift = float(np.std(np.log2(cent[a:b] + 1e-6)))
+        if dur < TARTYP_IMPULSE_S:
+            fact = "imp"
+        elif iter_ratio(a, b) > TARTYP_ITER:
+            fact = "iter"
+        else:
+            fact = "held"
+        if fmed >= TARTYP_COMPLEX:
+            mass = "X"
+        elif fmed >= TARTYP_TONIC or drift > TARTYP_DRIFT:
+            mass = "Y"
+        else:
+            mass = "N"
+        objects.append((a * frame_t, b * frame_t, mass, fact))
+    return objects
 
 
 def _repeat_runs(F, min_len=8, min_gap=8, thresh=0.85, top=12):
@@ -293,6 +357,53 @@ def _draw_main(ax, y, sr, style, color="#2a78d6"):
                     transform=ax.transAxes, ha="center", color=MUT,
                     fontsize=9)
         ax.set_xlim(0, len(env)); ax.set_ylim(0, 1.02)
+
+    elif style == "schaeffer":
+        objects = _schaeffer_objects(y, sr)
+        MASS_Y = {"N": 2, "Y": 1, "X": 0}
+        MASS_C = {"N": "#2a78d6", "Y": "#eda100", "X": "#e34948"}
+        total = max((b for _, b, _, _ in objects), default=1.0)
+        for t0, t1, mass, fact in objects:
+            yy = MASS_Y[mass]
+            if fact == "imp":
+                ax.plot([t0, t0], [yy - 0.36, yy + 0.36],
+                        color=MASS_C[mass], linewidth=1.1, alpha=0.75,
+                        solid_capstyle="butt")
+            else:
+                from matplotlib.patches import FancyBboxPatch, Rectangle
+                ax.add_patch(Rectangle(
+                    (t0, yy - 0.31), t1 - t0, 0.62,
+                    facecolor=MASS_C[mass], edgecolor="none", alpha=0.8,
+                    hatch="///" if fact == "iter" else None))
+        for mass, lab in (("N", "N — tonic"), ("Y", "Y — variable"),
+                          ("X", "X — complex")):
+            ax.text(0.005 * total, MASS_Y[mass] + 0.40, lab, ha="left",
+                    va="bottom", fontsize=7, color=MUT, zorder=5,
+                    bbox=dict(facecolor="white", alpha=0.75,
+                              edgecolor="none", pad=1))
+            ax.axhline(MASS_Y[mass], color=GRID, linewidth=0.8, zorder=0)
+        ax.set_xlim(0, total)
+        ax.set_ylim(-0.6, 2.6)
+        # TARTYP-grid fingerprint inset (mass rows x facture cols)
+        shares = np.zeros((3, 3))
+        FI = {"held": 0, "imp": 1, "iter": 2}
+        for t0, t1, mass, fact in objects:
+            shares[2 - MASS_Y[mass], FI[fact]] += t1 - t0
+        shares = shares / (shares.sum() + 1e-9)
+        ia = ax.inset_axes([0.858, 0.03, 0.132, 0.30])
+        ia.imshow(shares ** 0.5, cmap="Blues", vmin=0, vmax=1,
+                  aspect="auto")
+        for r in range(3):
+            for c in range(3):
+                if shares[r, c] >= 0.0005:
+                    ia.text(c, r, f"{shares[r, c] * 100:.0f}",
+                            ha="center", va="center", fontsize=5.5,
+                            color=INK)
+        ia.set_xticks(range(3), ["h", "'", "''"], fontsize=5.5)
+        ia.set_yticks(range(3), ["N", "Y", "X"], fontsize=5.5)
+        ia.tick_params(length=0, colors=MUT)
+        for s in ia.spines.values():
+            s.set_color(GRID)
 
     elif style == "wave":
         env, colors = wave_colors(y, sr)
