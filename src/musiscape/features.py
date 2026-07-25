@@ -76,6 +76,11 @@ def extract_track(y: np.ndarray, sr: int) -> dict:
         key, key_conf = estimate_key(chroma)
 
         db = librosa.amplitude_to_db(rms + 1e-12)
+        try:
+            from librosa.feature.rhythm import tempo as _tempo
+        except ImportError:                              # librosa < 0.10
+            _tempo = librosa.beat.tempo
+        tempo_bpm = float(_tempo(onset_envelope=flux, sr=sr)[0])
         pulse = amusic.pulse_clarity(yt, sr)
         fifths = amusic.fifths_center(chroma)
         tartyp = amusic.tartyp_profile(yt, sr)
@@ -95,6 +100,7 @@ def extract_track(y: np.ndarray, sr: int) -> dict:
         "chroma": [round(float(c), 4) for c in chroma],
         "pulse_R": pulse.get("R", 0.0),
         "pulse_bpm": pulse.get("period_bpm"),
+        "tempo_bpm": round(tempo_bpm, 1),
         "fifths_center": fifths["center_note"],
         "fifths_R": fifths["R"],
         "tartyp": tartyp["dist"],

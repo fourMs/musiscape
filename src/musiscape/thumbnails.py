@@ -156,17 +156,19 @@ def render_collection(coll: Collection, out_dir: str | Path,
 def notes_from_features(feats: list[dict]) -> dict:
     """(album, track) → "key · bpm" annotation for thumbnail title bars.
 
-    The BPM is the octave-corrected dominant period from the circular
-    pulse analysis; when pulse clarity is low (R < 0.1, i.e. rubato or
-    drifting material) it is prefixed with ``~`` — a nominal period, not
-    a felt tempo.
+    The BPM shown is the perceptually-weighted tempo estimate
+    (``tempo_bpm``, librosa's prior-based estimator, which targets the
+    felt beat rather than the subdivision the phase-lock peaks on);
+    when pulse clarity is low (R < 0.1, i.e. rubato or drifting
+    material) it is prefixed with ``~`` — a nominal tempo, not a felt
+    one. Falls back to ``pulse_bpm`` for older feature files.
     """
     out = {}
     for f in feats:
         parts = []
         if f.get("key"):
             parts.append(f["key"])
-        bpm = f.get("pulse_bpm")
+        bpm = f.get("tempo_bpm") or f.get("pulse_bpm")
         if bpm:
             approx = "~" if f.get("pulse_R", 0.0) < 0.1 else ""
             parts.append(f"{approx}{bpm:.0f} bpm")
