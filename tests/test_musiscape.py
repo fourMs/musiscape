@@ -52,6 +52,23 @@ def test_thumbnails(collection_dir, tmp_path):
     assert len(pngs) == 8
 
 
+@pytest.mark.parametrize("style", ["barcode", "ssm", "trajectory",
+                                   "keyscape", "rhythm", "combo"])
+def test_thumbnail_styles(collection_dir, tmp_path, style):
+    from musiscape import thumbnails
+    coll = musiscape.open_collection(collection_dir)
+    p = thumbnails.render_track(coll.tracks[0], "#2a78d6",
+                                tmp_path / f"{style}.png", style=style)
+    assert p.exists() and p.stat().st_size > 10_000
+
+
+def test_poster(collection_dir, tmp_path):
+    from musiscape import thumbnails
+    coll = musiscape.open_collection(collection_dir)
+    p = thumbnails.poster(coll, tmp_path, workers=1)
+    assert p.exists() and p.stat().st_size > 10_000
+
+
 def test_report(collection_dir, tmp_path):
     coll = musiscape.open_collection(collection_dir)
     readme = report.run(coll, tmp_path, workers=1)

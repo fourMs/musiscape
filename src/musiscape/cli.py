@@ -20,7 +20,7 @@ def main(argv=None):
                     "similarity landscape, honest categories.")
     p.add_argument("verb", choices=["probe", "extract", "fingerprint",
                                     "landscape", "categorize", "report",
-                                    "thumbnails"])
+                                    "thumbnails", "poster"])
     p.add_argument("folder", help="collection root (albums = subfolders)")
     p.add_argument("-o", "--out", help="output folder (default <root>/analysis)")
     p.add_argument("--workers", type=int, default=4)
@@ -28,12 +28,17 @@ def main(argv=None):
                    help="analyse only the first N seconds per track")
     p.add_argument("-k", type=int, help="number of categories (default: auto)")
     p.add_argument("--style", default="mel",
-                   choices=["mel", "chroma", "tempo", "combo"],
-                   help="thumbnail style (default mel)")
+                   help="thumbnail style: mel|chroma|tempo|combo|barcode|"
+                        "ssm|trajectory|keyscape|rhythm (default mel)")
     args = p.parse_args(argv)
 
     coll = open_collection(args.folder)
     out = _out(args, coll)
+
+    if args.verb == "poster":
+        from . import thumbnails
+        print(thumbnails.poster(coll, out, workers=args.workers))
+        return
 
     if args.verb == "thumbnails":
         from . import thumbnails
