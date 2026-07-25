@@ -29,7 +29,11 @@ Each track becomes one card, in a choice of representations:
 - ``arcs`` — Shape-of-Song-style arc diagram: repeated sections found in
   the self-similarity structure joined by arcs over the timeline.
 
-- ``schaeffer`` — the track's sound objects on a typo-morphology
+- ``tarsom`` — the track's position on Schaeffer's seven morphological
+  criteria (TARSOM: masse, timbre harmonique, grain, allure, dynamique,
+  profil mélodique, profil de masse), each a labeled gauge with signal
+  proxies calibrated on instrumental corpora;
+- ``schaeffer`` — the track's sound objects on a typo-morphology (TARTYP)
   timeline: three mass lanes (N tonic / Y variable / X complex), facture
   as mark style (impulse ticks, hatched iterations, solid held blocks),
   with a TARTYP-grid fingerprint inset. Uses the same signal proxies and
@@ -59,11 +63,11 @@ from .io import Collection, Track, load
 #: available card styles
 STYLES = ("mel", "chroma", "tempo", "combo", "barcode", "ssm",
           "trajectory", "keyscape", "rhythm", "wave",
-          "vinyl", "spiral", "tonnetz", "arcs", "schaeffer")
+          "vinyl", "spiral", "tonnetz", "arcs", "schaeffer", "tarsom")
 #: taller cards for the square-ish representations
 _TALL = {"combo": 5.4, "ssm": 5.2, "trajectory": 5.2, "keyscape": 5.2,
          "rhythm": 5.2, "vinyl": 5.6, "spiral": 5.6, "tonnetz": 5.2,
-         "arcs": 4.4, "schaeffer": 4.4}
+         "arcs": 4.4, "schaeffer": 4.4, "tarsom": 4.6}
 
 _FIFTHS = 2 * np.pi * (7 * np.arange(12) % 12) / 12
 
@@ -162,6 +166,73 @@ def _panels(y, sr, style):
         bpm = librosa.tempo_frequencies(T.shape[0], sr=sr)
         out.append(("tempo", T[(bpm >= 30) & (bpm <= 300)], 0.0))
     return out
+
+
+def _mod_share(env, rate, lo, hi):
+    """Share of envelope-modulation energy in [lo, hi] Hz + peak freq."""
+    env = env - env.mean()
+    if len(env) < 16 or not np.any(env):
+        return 0.0, 0.0
+    spec = np.abs(np.fft.rfft(env * np.hanning(len(env)))) ** 2
+    fq = np.fft.rfftfreq(len(env), 1 / rate)
+    tot = spec[fq > 0.2].sum() + 1e-12
+    band, bf = spec[(fq >= lo) & (fq < hi)], fq[(fq >= lo) & (fq < hi)]
+    peak = float(bf[np.argmax(band)]) if len(band) else 0.0
+    return float(band.sum() / tot), peak
+
+
+def _tarsom_criteria(y, sr, hop=512):
+    """Signal proxies for Schaeffer's seven morphological criteria."""
+    import librosa
+    from scipy.ndimage import median_filter
+    from ambiscape.music import ONSET_FLOOR
+    S = np.abs(librosa.stft(y, n_fft=2048, hop_length=hop))
+    flat = librosa.feature.spectral_flatness(S=S)[0]
+    cent = librosa.feature.spectral_centroid(S=S, sr=sr)[0]
+    rms = librosa.feature.rms(S=S)[0]
+    fine = librosa.feature.rms(y=y, frame_length=256, hop_length=64)[0]
+    env = librosa.onset.onset_strength(S=librosa.amplitude_to_db(S), sr=sr)
+    fr = librosa.onset.onset_detect(onset_envelope=env, sr=sr,
+                                    hop_length=hop, units="frames")
+    fr = fr[env[fr] >= ONSET_FLOOR]
+    frame_t = hop / sr
+    atks = []
+    for o in fr:
+        w = rms[o:o + int(0.5 / frame_t)]
+        if len(w) > 2:
+            atks.append(np.argmax(w) * frame_t)
+    chroma = librosa.feature.chroma_stft(S=S ** 2, sr=sr)
+    pc = median_filter(np.argmax(chroma, axis=0), size=9, mode="nearest")
+    dur = len(y) / sr
+    grain, _ = _mod_share(fine, sr / 64, 20, 100)
+    _, allure_hz = _mod_share(rms, 1 / frame_t, 0.5, 8)
+    return {
+        "masse": float(np.median(flat)),
+        "timbre": float(cent.mean()),
+        "grain": grain,
+        "allure": allure_hz,
+        "dynamique": float(np.median(atks)) if atks else 0.3,
+        "profil_mel": float(np.sum(np.diff(pc) != 0) / max(dur, 1e-9)),
+        "profil_masse": float(np.std(np.log10(flat + 1e-6))),
+    }
+
+
+#: (key, name, gloss, lo, hi, log, left anchor, right anchor)
+TARSOM_ROWS = [
+    ("masse", "masse", "mass", 1e-4, 2e-2, True, "tonic", "complex"),
+    ("timbre", "timbre harmonique", "harmonic timbre", 500, 2000, True,
+     "dark", "bright"),
+    ("grain", "grain", "surface texture", 0.0, 0.2, False,
+     "smooth", "granular"),
+    ("allure", "allure", "characteristic pulsation", 0.3, 3.0, True,
+     "slow", "fast"),
+    ("dynamique", "dynamique", "attack facture", 0.02, 0.3, True,
+     "percussive", "soft onset"),
+    ("profil_mel", "profil mélodique", "pitch mobility", 1.0, 4.0, False,
+     "static", "mobile"),
+    ("profil_masse", "profil de masse", "spectral evolution", 0.2, 1.2,
+     False, "fixed", "evolving"),
+]
 
 
 def _schaeffer_objects(y, sr, hop=512):
@@ -404,6 +475,32 @@ def _draw_main(ax, y, sr, style, color="#2a78d6"):
         ia.tick_params(length=0, colors=MUT)
         for s in ia.spines.values():
             s.set_color(GRID)
+
+    elif style == "tarsom":
+        crit = _tarsom_criteria(y, sr)
+        nrows = len(TARSOM_ROWS)
+        for r, (key, name, gloss, lo, hi, logsc, la, ra) in \
+                enumerate(TARSOM_ROWS):
+            v = crit[key]
+            if logsc:
+                x = (np.log10(max(v, 1e-12)) - np.log10(lo)) \
+                    / (np.log10(hi) - np.log10(lo))
+            else:
+                x = (v - lo) / (hi - lo)
+            x = float(np.clip(x, 0.02, 1.0))
+            yy = (nrows - 1 - r) * 1.45
+            ax.barh(yy, 1.0, height=0.20, color=GRID, alpha=0.55,
+                    linewidth=0)
+            ax.barh(yy, x, height=0.42, color=color, linewidth=0)
+            ax.text(0, yy + 0.38, name, fontsize=8, color=INK,
+                    fontweight="semibold", va="bottom")
+            ax.text(1.0, yy + 0.40, gloss, fontsize=6.5, color=MUT,
+                    va="bottom", ha="right")
+            ax.text(0, yy - 0.36, la, fontsize=6, color=MUT, va="top")
+            ax.text(1.0, yy - 0.36, ra, fontsize=6, color=MUT, va="top",
+                    ha="right")
+        ax.set_xlim(-0.01, 1.01)
+        ax.set_ylim(-0.95, (nrows - 1) * 1.45 + 0.95)
 
     elif style == "wave":
         env, colors = wave_colors(y, sr)
