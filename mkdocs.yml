@@ -1,0 +1,52 @@
+site_name: musiscape
+site_description: A toolbox for analysing music collections — corpus fingerprints, similarity landscapes, visual thumbnails, and honest categorisation
+site_url: https://fourms.github.io/musiscape/
+repo_url: https://github.com/fourMs/musiscape
+repo_name: fourMs/musiscape
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: blue
+      toggle:
+        icon: material/brightness-7
+        name: Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: blue
+      toggle:
+        icon: material/brightness-4
+        name: Light mode
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+
+nav:
+  - Home: index.md
+  - Install: install.md
+  - Quickstart: quickstart.md
+  - Guide:
+      - Collections & tracks: guide/collections.md
+      - Features, corpus statistics & categories: guide/analysis.md
+      - Visual thumbnails & posters: guide/thumbnails.md
+      - Schaeffer cards (TARTYP & TARSOM): guide/schaeffer.md
+  - API reference: api.md
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            show_source: true
+            members_order: source
+
+markdown_extensions:
+  - admonition
+  - tables
+  - pymdownx.highlight
+  - pymdownx.superfences
