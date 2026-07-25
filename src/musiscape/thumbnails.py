@@ -29,6 +29,10 @@ Each track becomes one card, in a choice of representations:
 - ``arcs`` — Shape-of-Song-style arc diagram: repeated sections found in
   the self-similarity structure joined by arcs over the timeline.
 
+- ``stereo`` — the stereo field: a pan-by-frequency spectrogram (blue =
+  left, red = right, ink strength = energy) with a goniometer inset, over
+  a width-and-correlation timeline. For multichannel and ambisonic
+  spatial analysis see ``ambiscape.spatial``;
 - ``tarsom`` — the track's position on Schaeffer's seven morphological
   criteria (TARSOM: masse, timbre harmonique, grain, allure, dynamique,
   profil mélodique, profil de masse) as a centre–periphery rose: each
@@ -65,11 +69,12 @@ from .io import Collection, Track, load
 #: available card styles
 STYLES = ("mel", "chroma", "tempo", "combo", "barcode", "ssm",
           "trajectory", "keyscape", "rhythm", "wave",
-          "vinyl", "spiral", "tonnetz", "arcs", "schaeffer", "tarsom")
+          "vinyl", "spiral", "tonnetz", "arcs", "schaeffer", "tarsom",
+          "stereo")
 #: taller cards for the square-ish representations
 _TALL = {"combo": 5.4, "ssm": 5.2, "trajectory": 5.2, "keyscape": 5.2,
          "rhythm": 5.2, "vinyl": 5.6, "spiral": 5.6, "tonnetz": 5.2,
-         "arcs": 4.4, "schaeffer": 4.4, "tarsom": 5.6}
+         "arcs": 4.4, "schaeffer": 4.4, "tarsom": 5.6, "stereo": 4.8}
 
 _FIFTHS = 2 * np.pi * (7 * np.arange(12) % 12) / 12
 
@@ -326,7 +331,7 @@ def _repeat_runs(F, min_len=8, min_gap=8, thresh=0.85, top=12):
     return picked, n
 
 
-def _draw_main(ax, y, sr, style, color="#2a78d6"):
+def _draw_main(ax, y, sr, style, color="#2a78d6", y2=None):
     """Draw a non-spectrogram main panel onto ``ax``."""
     import librosa
     from scipy.ndimage import uniform_filter, uniform_filter1d
@@ -513,6 +518,73 @@ def _draw_main(ax, y, sr, style, color="#2a78d6"):
         ax.set_ylim(0, 1.5)
         ax.spines["polar"].set_visible(False)
 
+    elif style == "stereo_pan":
+        L, R = y2
+        hop = 512
+        SL = np.abs(librosa.stft(L, n_fft=2048, hop_length=hop)) ** 2
+        SR_ = np.abs(librosa.stft(R, n_fft=2048, hop_length=hop)) ** 2
+        if np.allclose(L, R, atol=1e-6):
+            ax.text(0.5, 0.5, "mono — no stereo information",
+                    transform=ax.transAxes, ha="center", color=MUT,
+                    fontsize=9)
+            return
+        freqs = librosa.fft_frequencies(sr=sr, n_fft=2048)
+        edges = np.geomspace(60, 8000, 65)
+        idx = np.searchsorted(freqs, edges)
+        pan_img = np.zeros((64, SL.shape[1]))
+        e_img = np.zeros_like(pan_img)
+        for b in range(64):
+            a_, b_ = idx[b], max(idx[b + 1], idx[b] + 1)
+            eL, eR = SL[a_:b_].sum(0), SR_[a_:b_].sum(0)
+            e = eL + eR
+            pan_img[b] = (eR - eL) / (e + 1e-12)
+            e_img[b] = e
+        db = 10 * np.log10(e_img + 1e-12)
+        alpha = np.clip((db - (db.max() - 55)) / 55, 0, 1)
+        cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
+            "pan", ["#2a78d6", "#c9c8c1", "#e34948"])
+        rgba = cmap((pan_img + 1) / 2)
+        rgba[..., 3] = alpha
+        ax.imshow(rgba, origin="lower", aspect="auto",
+                  interpolation="nearest")
+        ax.text(0.006, 0.96, "◀ blue = left · red = right ▶",
+                transform=ax.transAxes, fontsize=6, color=MUT, va="top")
+        # goniometer inset: mid/side density
+        ia = ax.inset_axes([0.862, 0.60, 0.13, 0.38])
+        step = max(1, len(L) // 60000)
+        s = (R - L)[::step] / np.sqrt(2)
+        m = (R + L)[::step] / np.sqrt(2)
+        lim = np.percentile(np.abs(np.concatenate([s, m])), 99.5) + 1e-9
+        ia.scatter(s, m, s=0.5, color=color, alpha=0.06, linewidths=0)
+        ia.axvline(0, color=GRID, linewidth=0.6)
+        ia.set_xlim(-lim, lim); ia.set_ylim(-lim, lim)
+        ia.set_xticks([]); ia.set_yticks([])
+        for sp in ia.spines.values():
+            sp.set_color(GRID)
+        ia.set_title("goniometer", fontsize=5.5, color=MUT, pad=1)
+
+    elif style == "stereo_width":
+        L, R = y2
+        hop, win = 512, 2048
+        n = (len(L) - win) // hop
+        FL = librosa.util.frame(L, frame_length=win, hop_length=hop)[:, :n]
+        FR = librosa.util.frame(R, frame_length=win, hop_length=hop)[:, :n]
+        mid, side = (FL + FR) / 2, (FR - FL) / 2
+        em, es = (mid ** 2).sum(0), (side ** 2).sum(0)
+        width = es / (em + es + 1e-12)
+        num = ((FL - FL.mean(0)) * (FR - FR.mean(0))).sum(0)
+        corr = num / (FL.std(0) * FR.std(0) * win + 1e-12)
+        from scipy.ndimage import uniform_filter1d
+        width = uniform_filter1d(width, size=25)
+        corr = uniform_filter1d(corr, size=25)
+        x = np.arange(n)
+        ax.fill_between(x, 0, width, color=color, alpha=0.45, linewidth=0)
+        ax.plot(x, corr, color=INK, linewidth=0.8, alpha=0.75)
+        ax.axhline(0, color=GRID, linewidth=0.7)
+        ax.set_xlim(0, n); ax.set_ylim(-1.05, 1.05)
+        ax.text(0.006, 0.93, "width (fill) · L/R correlation (line)",
+                transform=ax.transAxes, fontsize=6, color=MUT, va="top")
+
     elif style == "wave":
         env, colors = wave_colors(y, sr)
         ax.bar(np.arange(len(env)), 2 * env, bottom=-env, width=1.0,
@@ -584,14 +656,27 @@ def render_track(track: Track, color: str, out_path: str | Path,
         warnings.simplefilter("ignore")
         y, sr = load(track, sr=sr)
         spectro = style in ("mel", "chroma", "tempo", "combo")
-        panels = _panels(y, sr, style) if spectro else [(style, None, None)]
+        if style == "stereo":
+            panels = [("stereo_pan", None, None),
+                      ("stereo_width", None, None)]
+        else:
+            panels = (_panels(y, sr, style) if spectro
+                      else [(style, None, None)])
         has_strip = style != "wave"
+        y2 = None
+        if style == "stereo":
+            from .io import load_stereo
+            y2, _ = load_stereo(track, sr=sr)
         hop = max(1, len(y) // 1200)
         env = np.abs(y[: len(y) // hop * hop]).reshape(-1, hop).max(axis=1)
 
         heights = {"mel": 4.2, "chroma": 2.4, "tempo": 2.4}
-        ratios = ([heights[n] for n, _, _ in panels] if spectro
-                  else [4.2 if style in ("barcode", "wave") else 6.0])
+        if spectro:
+            ratios = [heights[n] for n, _, _ in panels]
+        elif style == "stereo":
+            ratios = [4.0, 1.3]
+        else:
+            ratios = [4.2 if style in ("barcode", "wave") else 6.0]
         if has_strip:
             ratios = ratios + [1.0]
         fig_h = _TALL.get(style, 3.6)
@@ -612,7 +697,8 @@ def render_track(track: Track, color: str, out_path: str | Path,
                     ax.text(0.006, 0.93, name, transform=ax.transAxes,
                             fontsize=7, color="white", va="top", alpha=0.8)
             else:
-                _draw_main(ax, y, sr, style, color=color)
+                _draw_main(ax, y, sr, name if style == "stereo" else style,
+                           color=color, y2=y2)
             if style != "rhythm":
                 ax.set_xticks([]); ax.set_yticks([])
             else:
@@ -622,7 +708,7 @@ def render_track(track: Track, color: str, out_path: str | Path,
                     s.set_visible(False)
         if has_strip:
             ax1 = fig.add_subplot(gs[-1])
-            if style == "vinyl":
+            if style in ("vinyl", "stereo"):
                 wenv, wcolors = wave_colors(y, sr)
                 ax1.bar(np.arange(len(wenv)), 2 * wenv, bottom=-wenv,
                         width=1.0, color=wcolors, linewidth=0)

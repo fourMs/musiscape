@@ -2,7 +2,7 @@
 
 Every track becomes one card: a main representation, a title bar (track,
 album, duration, key · bpm when a `features.json` exists), and a waveform
-strip. Sixteen styles, chosen with `--style`; albums additionally get
+strip. Seventeen styles, chosen with `--style`; albums additionally get
 contact sheets. All examples below are rendered from a small synthetic
 demo collection (arpeggios, drones, strummed chords).
 
@@ -58,6 +58,16 @@ beat-wheel inset: onset phases on the dominant-period circle and the
 pulse-clarity resultant arrow:
 
 ![rhythm](../img/style_rhythm.png)
+
+## Stereo field
+
+`stereo` — where the music sits in the stereo image: a pan-by-frequency
+spectrogram (blue = left, red = right, ink strength = energy) with a
+goniometer inset, over a smoothed width-and-correlation timeline. Mono
+recordings degrade gracefully. For multichannel and ambisonic material,
+use [ambiscape](https://github.com/fourMs/ambiscape)'s spatial analysis.
+
+![stereo](../img/style_stereo.png)
 
 ## Schaeffer cards
 

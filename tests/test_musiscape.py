@@ -65,6 +65,28 @@ def test_thumbnail_styles(collection_dir, tmp_path, style):
     assert p.exists() and p.stat().st_size > 5_000
 
 
+def test_stereo_card(tmp_path):
+    import soundfile as sf
+    from musiscape.io import Track
+    from musiscape import thumbnails
+    from tests.conftest import plucks, SR
+    y = plucks(12.0, 0.25, 330.0)
+    pan = np.linspace(0.1, 0.9, len(y))          # drift left → right
+    stereo = np.stack([y * (1 - pan), y * pan], axis=1)
+    f = tmp_path / "panned.wav"
+    sf.write(f, stereo, SR)
+    p = thumbnails.render_track(Track(path=f, album="t"), "#2a78d6",
+                                tmp_path / "stereo.png", style="stereo")
+    assert p.exists() and p.stat().st_size > 5_000
+    # mono input degrades gracefully
+    f2 = tmp_path / "mono.wav"
+    sf.write(f2, y, SR)
+    p2 = thumbnails.render_track(Track(path=f2, album="t"), "#2a78d6",
+                                 tmp_path / "stereo_mono.png",
+                                 style="stereo")
+    assert p2.exists()
+
+
 def test_poster(collection_dir, tmp_path):
     from musiscape import thumbnails
     coll = musiscape.open_collection(collection_dir)

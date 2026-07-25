@@ -66,3 +66,15 @@ def load(track: Track, sr: int = 22050, duration: float | None = None):
     import librosa
     y, sr = librosa.load(str(track.path), sr=sr, mono=True, duration=duration)
     return y, sr
+
+
+def load_stereo(track: Track, sr: int = 22050,
+                duration: float | None = None):
+    """Load a track as a (2, n) stereo pair; mono files are duplicated."""
+    import librosa
+    import numpy as np
+    y, sr = librosa.load(str(track.path), sr=sr, mono=False,
+                         duration=duration)
+    if y.ndim == 1:
+        y = np.stack([y, y])
+    return y[:2], sr

@@ -22,7 +22,7 @@ centers on the circle of fifths, and object-level TARTYP / TARSOM proxies.
   features, plus an album-affinity matrix and internal-consistency scores.
 - Categories — k-means clusters that describe themselves through signed
   feature z-scores ("sparse, dark, drone-like" — never just "cluster 3").
-- Thumbnails — sixteen per-track visual card styles, from spectrograms
+- Thumbnails — seventeen per-track visual card styles, from spectrograms
   through Freesound-style waveforms, tonality vinyl discs, Sapp keyscapes
   and Shape-of-Song arcs, to Schaefferian TARTYP timelines and TARSOM
   morphology roses. See the [gallery](guide/thumbnails.md).

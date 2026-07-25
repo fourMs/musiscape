@@ -31,9 +31,10 @@ musiscape thumbnails  ~/Music/my-collection --style combo   # per-track cards
 musiscape poster      ~/Music/my-collection    # whole collection as one image
 ```
 
-The sixteen thumbnail styles range from spectrograms and Freesound-style
+The seventeen thumbnail styles range from spectrograms and Freesound-style
 coloured waveforms through tonality vinyl discs, keyscapes and repetition
-arcs to Schaeffer-inspired TARTYP timelines and TARSOM roses. Posters stack
+arcs to Schaeffer-inspired TARTYP timelines, TARSOM roses and a
+stereo-field view. Posters stack
 every track as a harmony barcode, or lay the collection out as a grid of
 tonality discs (`--style vinyl`).
 
