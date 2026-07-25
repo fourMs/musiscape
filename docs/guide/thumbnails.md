@@ -86,3 +86,13 @@ musiscape poster <folder> --style vinyl   # grid of tonality discs
 Albums read as color families: a harmonically coherent album shares hues, a
 wandering one doesn't, and weakly tonal material (drones) washes out to low
 saturation.
+
+## Sonic thumbnails
+
+Not everything worth summarising is visual. `musiscape sonic <folder>`
+renders a ~12-second audio summary per track: a montage of the most
+representative passage (the window whose features sit closest to the whole
+track), the climax, and the most contrasting energetic section, in
+chronological order with crossfades — plus one concatenated medley file
+per album for fast browsing by ear. Selection is deterministic and
+explainable; no learned model decides what matters.

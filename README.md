@@ -29,6 +29,7 @@ musiscape landscape   ~/Music/my-collection    # PCA similarity map + affinity
 musiscape categorize  ~/Music/my-collection    # k-means with named signatures
 musiscape thumbnails  ~/Music/my-collection --style combo   # per-track cards
 musiscape poster      ~/Music/my-collection    # whole collection as one image
+musiscape sonic       ~/Music/my-collection    # ~12 s audio summary per track
 ```
 
 The seventeen thumbnail styles range from spectrograms and Freesound-style

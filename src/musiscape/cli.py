@@ -20,7 +20,7 @@ def main(argv=None):
                     "similarity landscape, honest categories.")
     p.add_argument("verb", choices=["probe", "extract", "fingerprint",
                                     "landscape", "categorize", "report",
-                                    "thumbnails", "poster"])
+                                    "thumbnails", "poster", "sonic"])
     p.add_argument("folder", help="collection root (albums = subfolders)")
     p.add_argument("-o", "--out", help="output folder (default <root>/analysis)")
     p.add_argument("--workers", type=int, default=4)
@@ -34,6 +34,11 @@ def main(argv=None):
 
     coll = open_collection(args.folder)
     out = _out(args, coll)
+
+    if args.verb == "sonic":
+        from . import sonic
+        print(sonic.export_collection(coll, out, workers=args.workers))
+        return
 
     if args.verb == "poster":
         from . import thumbnails

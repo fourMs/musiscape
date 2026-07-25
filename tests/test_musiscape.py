@@ -87,6 +87,19 @@ def test_stereo_card(tmp_path):
     assert p2.exists()
 
 
+def test_sonic_thumbnail(collection_dir, tmp_path):
+    import soundfile as sf
+    from musiscape import sonic
+    coll = musiscape.open_collection(collection_dir)
+    out = sonic.export_collection(coll, tmp_path, workers=1)
+    wavs = list(out.rglob("*.wav"))
+    # 6 track thumbnails + 2 album medleys
+    assert len(wavs) == 8
+    y, sr = sf.read(next(p for p in wavs if "medley" not in p.name))
+    assert 3.0 < len(y) / sr < 15.0
+    assert np.abs(y).max() > 0.05
+
+
 def test_poster(collection_dir, tmp_path):
     from musiscape import thumbnails
     coll = musiscape.open_collection(collection_dir)

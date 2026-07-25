@@ -24,6 +24,10 @@
 
 ::: musiscape.thumbnails
 
+## Sonic thumbnails
+
+::: musiscape.sonic
+
 ## Report
 
 ::: musiscape.report
