@@ -43,6 +43,15 @@ def test_categorize_recovers_albums(feats):
     assert per_album["plucked album"] != per_album["drone album"]
 
 
+def test_thumbnails(collection_dir, tmp_path):
+    from musiscape import thumbnails
+    coll = musiscape.open_collection(collection_dir)
+    out = thumbnails.render_collection(coll, tmp_path, workers=1)
+    pngs = list(out.rglob("*.png"))
+    # 6 track cards + 2 album contact sheets
+    assert len(pngs) == 8
+
+
 def test_report(collection_dir, tmp_path):
     coll = musiscape.open_collection(collection_dir)
     readme = report.run(coll, tmp_path, workers=1)

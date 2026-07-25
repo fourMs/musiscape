@@ -19,7 +19,8 @@ def main(argv=None):
         description="Analyse a music collection: corpus fingerprints, "
                     "similarity landscape, honest categories.")
     p.add_argument("verb", choices=["probe", "extract", "fingerprint",
-                                    "landscape", "categorize", "report"])
+                                    "landscape", "categorize", "report",
+                                    "thumbnails"])
     p.add_argument("folder", help="collection root (albums = subfolders)")
     p.add_argument("-o", "--out", help="output folder (default <root>/analysis)")
     p.add_argument("--workers", type=int, default=4)
@@ -30,6 +31,17 @@ def main(argv=None):
 
     coll = open_collection(args.folder)
     out = _out(args, coll)
+
+    if args.verb == "thumbnails":
+        from . import thumbnails
+        notes = {}
+        fpath = out / "features.json"
+        if fpath.exists():
+            notes = thumbnails.notes_from_features(
+                features.load_features(fpath))
+        print(thumbnails.render_collection(coll, out, notes=notes,
+                                           workers=args.workers))
+        return
 
     if args.verb == "probe":
         for a in coll.albums:
