@@ -31,8 +31,10 @@ Each track becomes one card, in a choice of representations:
 
 - ``tarsom`` — the track's position on Schaeffer's seven morphological
   criteria (TARSOM: masse, timbre harmonique, grain, allure, dynamique,
-  profil mélodique, profil de masse), each a labeled gauge with signal
-  proxies calibrated on instrumental corpora;
+  profil mélodique, profil de masse) as a centre–periphery rose: each
+  criterion a sector radiating from the centre pole (tonic, dark, smooth,
+  slow, percussive, static, fixed) toward its periphery pole (complex,
+  bright, granular, fast, soft, mobile, evolving);
 - ``schaeffer`` — the track's sound objects on a typo-morphology (TARTYP)
   timeline: three mass lanes (N tonic / Y variable / X complex), facture
   as mark style (impulse ticks, hatched iterations, solid held blocks),
@@ -67,7 +69,7 @@ STYLES = ("mel", "chroma", "tempo", "combo", "barcode", "ssm",
 #: taller cards for the square-ish representations
 _TALL = {"combo": 5.4, "ssm": 5.2, "trajectory": 5.2, "keyscape": 5.2,
          "rhythm": 5.2, "vinyl": 5.6, "spiral": 5.6, "tonnetz": 5.2,
-         "arcs": 4.4, "schaeffer": 4.4, "tarsom": 4.6}
+         "arcs": 4.4, "schaeffer": 4.4, "tarsom": 5.6}
 
 _FIFTHS = 2 * np.pi * (7 * np.arange(12) % 12) / 12
 
@@ -478,7 +480,8 @@ def _draw_main(ax, y, sr, style, color="#2a78d6"):
 
     elif style == "tarsom":
         crit = _tarsom_criteria(y, sr)
-        nrows = len(TARSOM_ROWS)
+        n = len(TARSOM_ROWS)
+        wedge = 2 * np.pi / n
         for r, (key, name, gloss, lo, hi, logsc, la, ra) in \
                 enumerate(TARSOM_ROWS):
             v = crit[key]
@@ -487,20 +490,28 @@ def _draw_main(ax, y, sr, style, color="#2a78d6"):
                     / (np.log10(hi) - np.log10(lo))
             else:
                 x = (v - lo) / (hi - lo)
-            x = float(np.clip(x, 0.02, 1.0))
-            yy = (nrows - 1 - r) * 1.45
-            ax.barh(yy, 1.0, height=0.20, color=GRID, alpha=0.55,
-                    linewidth=0)
-            ax.barh(yy, x, height=0.42, color=color, linewidth=0)
-            ax.text(0, yy + 0.38, name, fontsize=8, color=INK,
-                    fontweight="semibold", va="bottom")
-            ax.text(1.0, yy + 0.40, gloss, fontsize=6.5, color=MUT,
-                    va="bottom", ha="right")
-            ax.text(0, yy - 0.36, la, fontsize=6, color=MUT, va="top")
-            ax.text(1.0, yy - 0.36, ra, fontsize=6, color=MUT, va="top",
-                    ha="right")
-        ax.set_xlim(-0.01, 1.01)
-        ax.set_ylim(-0.95, (nrows - 1) * 1.45 + 0.95)
+            x = float(np.clip(x, 0.06, 1.0))
+            th = r * wedge
+            ax.bar(th, 1.0, width=wedge * 0.86, bottom=0,
+                   color=GRID, alpha=0.35, linewidth=0)
+            ax.bar(th, x, width=wedge * 0.86, bottom=0,
+                   color=color, alpha=0.9, linewidth=0)
+            sx = np.sin(th)
+            ha = "left" if sx > 0.25 else "right" if sx < -0.25 else "center"
+            for txt, dy, fs, col, wt in ((name, 7, 7.5, INK, "semibold"),
+                                         (f"{la} → {ra}", -6, 5.5, MUT,
+                                          "normal")):
+                ax.annotate(txt, xy=(th, 1.08), xytext=(0, dy),
+                            textcoords="offset points", ha=ha, va="center",
+                            fontsize=fs, color=col, fontweight=wt,
+                            annotation_clip=False)
+        ring = np.linspace(0, 2 * np.pi, 120)
+        for rr in (0.5, 1.0):
+            ax.plot(ring, np.full_like(ring, rr), color=GRID,
+                    linewidth=0.7, zorder=0)
+        ax.set_theta_zero_location("N"); ax.set_theta_direction(-1)
+        ax.set_ylim(0, 1.5)
+        ax.spines["polar"].set_visible(False)
 
     elif style == "wave":
         env, colors = wave_colors(y, sr)
@@ -591,7 +602,7 @@ def render_track(track: Track, color: str, out_path: str | Path,
                               left=0.015, right=0.985, top=top, bottom=0.05,
                               hspace=0.10)
         for i, (name, M, vmin) in enumerate(panels):
-            polar = style in ("vinyl", "spiral")
+            polar = style in ("vinyl", "spiral", "tarsom")
             ax = (fig.add_subplot(gs[i], projection="polar") if polar
                   else fig.add_subplot(gs[i]))
             if spectro:

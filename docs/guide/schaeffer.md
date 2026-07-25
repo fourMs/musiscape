@@ -24,7 +24,9 @@ drones, pedals, large objects) are a planned extension.
 
 The *Tableau récapitulatif du solfège des objets musicaux* summarises seven
 morphological criteria. The card shows the track's measured position on
-each, as gauges with anchored class scales:
+each as a centre–periphery rose — every criterion a sector radiating from
+the centre pole (tonic, dark, smooth, slow, percussive, static, fixed)
+toward its periphery pole, so a track's morphology reads as one shape:
 
 | Criterion | Proxy | Scale |
 |---|---|---|
