@@ -17,7 +17,18 @@ Each track becomes one card, in a choice of representations:
   metric playing collapses to points, rubato spreads into clouds;
 - ``wave`` — Freesound-style waveform: the amplitude envelope with each
   moment colored by its spectral centroid (dark blue = dark timbre,
-  red = bright), so timbre rides on the waveform itself.
+  red = bright), so timbre rides on the waveform itself;
+- ``vinyl`` — the barcode bent into one revolution (12 o'clock = start,
+  clockwise; hue = harmony, radius = loudness): the track as a disc glyph;
+- ``spiral`` — time-integrated energy on the Shepard helix (angle = pitch
+  class, radius = octave): the only view that shows register;
+- ``tonnetz`` — the harmony's path on the circle-of-fifths plane of the
+  tonal centroid (Harte's tonnetz), colored start → end;
+- ``arcs`` — Shape-of-Song-style arc diagram: repeated sections found in
+  the self-similarity structure joined by arcs over the timeline.
+
+The ``rhythm`` card carries a beat-wheel inset: onset phases on the
+dominant-period circle with the pulse-clarity resultant arrow.
 
 Albums additionally get a contact sheet, and :func:`poster` stacks every
 track's barcode into a single collection image where albums read as color
@@ -38,11 +49,13 @@ from .figures import GRID, INK, MUT, album_colors
 from .io import Collection, Track, load
 
 #: available card styles
-STYLES = ("mel", "chroma", "tempo", "combo",
-          "barcode", "ssm", "trajectory", "keyscape", "rhythm", "wave")
+STYLES = ("mel", "chroma", "tempo", "combo", "barcode", "ssm",
+          "trajectory", "keyscape", "rhythm", "wave",
+          "vinyl", "spiral", "tonnetz", "arcs")
 #: taller cards for the square-ish representations
 _TALL = {"combo": 5.4, "ssm": 5.2, "trajectory": 5.2, "keyscape": 5.2,
-         "rhythm": 5.2}
+         "rhythm": 5.2, "vinyl": 5.6, "spiral": 5.6, "tonnetz": 5.2,
+         "arcs": 4.4}
 
 _FIFTHS = 2 * np.pi * (7 * np.arange(12) % 12) / 12
 
@@ -130,7 +143,38 @@ def _panels(y, sr, style):
     return out
 
 
-def _draw_main(ax, y, sr, style):
+def _repeat_runs(F, min_len=8, min_gap=8, thresh=0.85, top=12):
+    """Repeated-section pairs from a feature sequence (diagonal runs of
+    the cosine self-similarity matrix). Returns (i, j, length) in frames."""
+    Fn = F / (np.linalg.norm(F, axis=0, keepdims=True) + 1e-9)
+    S = Fn.T @ Fn
+    n = S.shape[0]
+    runs = []
+    for d in range(min_gap, n - min_len):
+        m = np.diagonal(S, offset=d) > thresh
+        i = 0
+        while i < len(m):
+            if m[i]:
+                j = i
+                while j < len(m) and m[j]:
+                    j += 1
+                if j - i >= min_len:
+                    runs.append((i, i + d, j - i))
+                i = j
+            else:
+                i += 1
+    runs.sort(key=lambda r: -r[2])
+    picked = []
+    for i, j, L in runs:
+        if all(abs(i - a) > L / 2 or abs(j - b) > L / 2
+               for a, b, _ in picked):
+            picked.append((i, j, L))
+        if len(picked) >= top:
+            break
+    return picked, n
+
+
+def _draw_main(ax, y, sr, style, color="#2a78d6"):
     """Draw a non-spectrogram main panel onto ``ax``."""
     import librosa
     from scipy.ndimage import uniform_filter, uniform_filter1d
@@ -161,6 +205,79 @@ def _draw_main(ax, y, sr, style):
         C, _, _ = _feats_2hz(y, sr)
         ax.imshow(keyscape_rgb(C), aspect="auto", origin="upper",
                   interpolation="nearest")
+
+    elif style == "vinyl":
+        C, _, rms = _feats_2hz(y, sr)
+        rgb = barcode_rgb(C, rms)
+        n = len(rgb)
+        theta = np.linspace(0, 2 * np.pi, n, endpoint=False)
+        loud = np.clip(rms / (np.percentile(rms, 95) + 1e-9), 0.15, 1)
+        ax.bar(theta, 0.45 + 0.55 * loud, width=2 * np.pi / n * 1.5,
+               bottom=0.55, color=rgb, linewidth=0)
+        ax.set_theta_zero_location("N"); ax.set_theta_direction(-1)
+        ax.set_ylim(0, 1.6)
+        ax.spines["polar"].set_visible(False)
+
+    elif style == "spiral":
+        CQ = np.abs(librosa.cqt(y, sr=sr, fmin=librosa.note_to_hz("C2"),
+                                n_bins=5 * 36, bins_per_octave=36))
+        e = CQ.mean(axis=1)
+        e = e / (e.max() + 1e-9)
+        k = np.arange(len(e))
+        ax.scatter(2 * np.pi * (k % 36) / 36, 0.3 + (k / 36) / 5,
+                   s=4 + 220 * e ** 1.4, c=e, cmap="magma", alpha=0.85,
+                   linewidths=0)
+        pcs = {"C": 0, "D": 2, "E": 4, "F": 5, "G": 7, "A": 9, "B": 11}
+        for name, pc in pcs.items():
+            ax.text(2 * np.pi * pc / 12, 1.44, name, ha="center",
+                    va="center", fontsize=7, color=MUT)
+        ax.set_theta_zero_location("N"); ax.set_theta_direction(-1)
+        ax.set_ylim(0, 1.5)
+        ax.spines["polar"].set_visible(False)
+
+    elif style == "tonnetz":
+        yh = librosa.effects.harmonic(y)
+        T6 = librosa.feature.tonnetz(y=yh, sr=sr)
+        step = max(1, T6.shape[1] // 400)
+        P = uniform_filter1d(T6[:2, ::step], size=7, axis=1).T
+        circ = plt.Circle((0, 0), 1.0, fill=False, color=GRID, linewidth=1)
+        ax.add_patch(circ)
+        for pc in range(12):
+            a = 2 * np.pi * pc / 12
+            ax.text(1.12 * np.sin(a), 1.12 * np.cos(a),
+                    ["C", "G", "D", "A", "E", "B", "F#", "C#",
+                     "G#", "D#", "A#", "F"][pc],
+                    ha="center", va="center", fontsize=6.5, color=MUT)
+        ax.plot(P[:, 0], P[:, 1], color=MUT, alpha=0.3, linewidth=0.8)
+        ax.scatter(P[:, 0], P[:, 1], c=np.arange(len(P)), cmap="magma",
+                   s=8, alpha=0.9)
+        ax.set_xlim(-1.25, 1.25); ax.set_ylim(-1.25, 1.25)
+        ax.set_aspect("equal")
+
+    elif style == "arcs":
+        C, M, _ = _feats_2hz(y, sr)
+        runs, n = _repeat_runs(np.vstack([C, M / (np.abs(M).max() + 1e-9)]))
+        hop = max(1, len(y) // 1200)
+        env = np.abs(y[: len(y) // hop * hop]).reshape(-1, hop).max(axis=1)
+        env = env / (env.max() + 1e-9)
+        sc = len(env) / max(n, 1)
+        ax.fill_between(np.arange(len(env)), 0, 0.16 * env, color=color,
+                        linewidth=0)
+        if runs:
+            Lmax = runs[0][2]
+            for i, j, L in runs:
+                a, b = (i + L / 2) * sc, (j + L / 2) * sc
+                th = np.linspace(0, np.pi, 60)
+                ax.plot((a + b) / 2 + (b - a) / 2 * np.cos(th),
+                        0.18 + 0.8 * ((b - a) / len(env)) * np.sin(th),
+                        color=color, alpha=0.55,
+                        linewidth=0.8 + 2.6 * L / Lmax,
+                        solid_capstyle="round")
+        else:
+            ax.text(0.5, 0.6, "no strong repetitions found",
+                    transform=ax.transAxes, ha="center", color=MUT,
+                    fontsize=9)
+        ax.set_xlim(0, len(env)); ax.set_ylim(0, 1.02)
 
     elif style == "wave":
         hop = 512
@@ -195,6 +312,41 @@ def _draw_main(ax, y, sr, style):
             ax.plot([0.05, 2.5], [0.05, 2.5], color=GRID, linewidth=1)
             ax.set_xscale("log"); ax.set_yscale("log")
             ax.set_xlim(0.05, 2.5); ax.set_ylim(0.05, 2.5)
+            # beat-wheel inset: onset phases + pulse-clarity arrow
+            try:
+                from ambiscape.circstats import mean_resultant
+                from ambiscape.music import dominant_period
+                w = env[fr]
+                p0 = dominant_period(env, sr)
+                best = (p0, -1.0, 0.0)
+                for p in (p0 / 2, p0, p0 * 2):
+                    if not 60 / 200 <= p <= 60 / 40:
+                        continue
+                    mu, R = mean_resultant(2 * np.pi * (t / p % 1.0),
+                                           weights=w)
+                    if R > best[1]:
+                        best = (p, R, mu)
+                p, R, mu = best
+                ph = 2 * np.pi * (t / p % 1.0)
+                ia = ax.inset_axes([0.70, 0.70, 0.29, 0.29],
+                                   projection="polar")
+                bins = np.linspace(0, 2 * np.pi, 25)
+                hist, _ = np.histogram(ph, bins=bins, weights=w)
+                hist = hist / (hist.max() + 1e-9)
+                ia.bar((bins[:-1] + bins[1:]) / 2, hist,
+                       width=np.diff(bins), color=color, alpha=0.7,
+                       linewidth=0)
+                ia.annotate("", xy=(mu, min(R * 3, 1.0)), xytext=(0, 0),
+                            arrowprops=dict(arrowstyle="-|>", color=INK,
+                                            lw=1.4))
+                ia.set_theta_zero_location("N")
+                ia.set_theta_direction(-1)
+                ia.set_ylim(0, 1.05)
+                ia.set_xticks([]); ia.set_yticks([])
+                ia.spines["polar"].set_visible(False)
+                ia.set_title(f"R={R:.2f}", fontsize=6, color=MUT, pad=1)
+            except Exception:                             # noqa: BLE001
+                pass
         else:
             ax.text(0.5, 0.5, "too few onsets", transform=ax.transAxes,
                     ha="center", color=MUT, fontsize=9)
@@ -227,7 +379,9 @@ def render_track(track: Track, color: str, out_path: str | Path,
                               left=0.015, right=0.985, top=top, bottom=0.05,
                               hspace=0.10)
         for i, (name, M, vmin) in enumerate(panels):
-            ax = fig.add_subplot(gs[i])
+            polar = style in ("vinyl", "spiral")
+            ax = (fig.add_subplot(gs[i], projection="polar") if polar
+                  else fig.add_subplot(gs[i]))
             if spectro:
                 ax.imshow(M, origin="lower", aspect="auto", cmap="magma",
                           vmin=vmin if vmin else None)
@@ -235,13 +389,14 @@ def render_track(track: Track, color: str, out_path: str | Path,
                     ax.text(0.006, 0.93, name, transform=ax.transAxes,
                             fontsize=7, color="white", va="top", alpha=0.8)
             else:
-                _draw_main(ax, y, sr, style)
+                _draw_main(ax, y, sr, style, color=color)
             if style != "rhythm":
                 ax.set_xticks([]); ax.set_yticks([])
             else:
                 ax.tick_params(labelsize=6, colors=MUT)
-            for s in ax.spines.values():
-                s.set_visible(False)
+            if not polar:
+                for s in ax.spines.values():
+                    s.set_visible(False)
         if has_strip:
             ax1 = fig.add_subplot(gs[-1])
             x = np.arange(len(env))
@@ -339,11 +494,80 @@ def _strip_work(job):
         return None
 
 
+def _disc_work(job):
+    path, album = job
+    try:
+        t = Track(path=Path(path), album=album)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            y, sr = load(t)
+            C, _, rms = _feats_2hz(y, sr)
+        print(f"[{album}] {t.title}", flush=True)
+        return album, t.title, barcode_rgb(C, rms), np.clip(
+            rms / (np.percentile(rms, 95) + 1e-9), 0.15, 1)
+    except Exception as e:                                # noqa: BLE001
+        print(f"ERROR {path}: {e}", flush=True)
+        return None
+
+
+def _vinyl_poster(coll: Collection, out_dir: Path, workers: int) -> Path:
+    """Disc-grid poster: one vinyl glyph per track, grouped by album."""
+    jobs = [(str(t.path), t.album) for t in coll.tracks]
+    if workers > 1:
+        from concurrent.futures import ProcessPoolExecutor
+        with ProcessPoolExecutor(max_workers=workers) as ex:
+            res = [r for r in ex.map(_disc_work, jobs) if r]
+    else:
+        res = [r for r in map(_disc_work, jobs) if r]
+    discs = {(a, t): (rgb, loud) for a, t, rgb, loud in res}
+
+    cols = 6
+    rows_per_album = [(a, (len(a.tracks) + cols - 1) // cols)
+                      for a in coll.albums]
+    total_rows = sum(r for _, r in rows_per_album)
+    fig = plt.figure(figsize=(2.3 * cols, 2.6 * total_rows
+                              + 0.5 * len(coll.albums)), dpi=110)
+    gs = fig.add_gridspec(total_rows, cols, hspace=0.55, wspace=0.15)
+    colors = album_colors(coll.album_names)
+    row = 0
+    for a, nrows in rows_per_album:
+        for k, t in enumerate(a.tracks):
+            d = discs.get((a.name, t.title))
+            if d is None:
+                continue
+            rgb, loud = d
+            ax = fig.add_subplot(gs[row + k // cols, k % cols],
+                                 projection="polar")
+            n = len(rgb)
+            theta = np.linspace(0, 2 * np.pi, n, endpoint=False)
+            ax.bar(theta, 0.45 + 0.55 * loud, width=2 * np.pi / n * 1.5,
+                   bottom=0.55, color=rgb, linewidth=0)
+            ax.set_theta_zero_location("N"); ax.set_theta_direction(-1)
+            ax.set_ylim(0, 1.6)
+            ax.set_xticks([]); ax.set_yticks([])
+            ax.spines["polar"].set_visible(False)
+            ax.set_title(t.title[:26], fontsize=6.5, color=INK, pad=2)
+            if k == 0:
+                ax.text(-0.35, 0.5, a.name, transform=ax.transAxes,
+                        rotation=90, va="center", ha="center", fontsize=8,
+                        color=colors[a.name], fontweight="semibold")
+        row += nrows
+    out = Path(out_dir) / "poster.png"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out, facecolor="white", bbox_inches="tight")
+    plt.close(fig)
+    return out
+
+
 def poster(coll: Collection, out_dir: str | Path, workers: int = 4,
-           strip_w: int = 1200, strip_h: int = 16) -> Path:
-    """One image for the whole collection: every track a barcode strip,
-    grouped by album — albums read as color families, drones as
-    desaturated bands. → ``<out_dir>/poster.png``"""
+           strip_w: int = 1200, strip_h: int = 16,
+           style: str = "barcode") -> Path:
+    """One image for the whole collection. ``style="barcode"`` stacks every
+    track as a horizontal color strip; ``style="vinyl"`` lays the tracks
+    out as a grid of disc glyphs. Albums read as color families either
+    way. → ``<out_dir>/poster.png``"""
+    if style == "vinyl":
+        return _vinyl_poster(coll, Path(out_dir), workers)
     from PIL import Image, ImageDraw
     jobs = [(str(t.path), t.album, strip_w) for t in coll.tracks]
     if workers > 1:

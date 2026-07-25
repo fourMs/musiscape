@@ -53,7 +53,8 @@ def test_thumbnails(collection_dir, tmp_path):
 
 
 @pytest.mark.parametrize("style", ["barcode", "ssm", "trajectory",
-                                   "keyscape", "rhythm", "combo", "wave"])
+                                   "keyscape", "rhythm", "combo", "wave",
+                                   "vinyl", "spiral", "tonnetz", "arcs"])
 def test_thumbnail_styles(collection_dir, tmp_path, style):
     from musiscape import thumbnails
     coll = musiscape.open_collection(collection_dir)
@@ -67,6 +68,13 @@ def test_poster(collection_dir, tmp_path):
     from musiscape import thumbnails
     coll = musiscape.open_collection(collection_dir)
     p = thumbnails.poster(coll, tmp_path, workers=1)
+    assert p.exists() and p.stat().st_size > 10_000
+
+
+def test_poster_vinyl(collection_dir, tmp_path):
+    from musiscape import thumbnails
+    coll = musiscape.open_collection(collection_dir)
+    p = thumbnails.poster(coll, tmp_path, workers=1, style="vinyl")
     assert p.exists() and p.stat().st_size > 10_000
 
 

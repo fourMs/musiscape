@@ -29,7 +29,7 @@ def main(argv=None):
     p.add_argument("-k", type=int, help="number of categories (default: auto)")
     p.add_argument("--style", default="mel",
                    help="thumbnail style: mel|chroma|tempo|combo|barcode|"
-                        "ssm|trajectory|keyscape|rhythm|wave (default mel)")
+                        "ssm|trajectory|keyscape|rhythm|wave|vinyl|spiral|tonnetz|arcs (default mel); poster accepts barcode|vinyl")
     args = p.parse_args(argv)
 
     coll = open_collection(args.folder)
@@ -37,7 +37,9 @@ def main(argv=None):
 
     if args.verb == "poster":
         from . import thumbnails
-        print(thumbnails.poster(coll, out, workers=args.workers))
+        pstyle = "vinyl" if args.style == "vinyl" else "barcode"
+        print(thumbnails.poster(coll, out, workers=args.workers,
+                                style=pstyle))
         return
 
     if args.verb == "thumbnails":
