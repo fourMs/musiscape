@@ -14,10 +14,10 @@ coll.tracks             # flat list across albums
 This is deliberately tag-free: album membership comes from folders, titles
 from filenames. Two consequences worth knowing:
 
-- **Duplicates count twice.** If a collection holds both `mp3/` and lossless
+- Duplicates count twice. If a collection holds both `mp3/` and lossless
   `wav/` copies, both are scanned. Point musiscape at the subset you want
   analysed (or build a symlink/copy tree).
-- **Nested folders are albums too.** `wav cd quality/Album_wav/` becomes its
+- Nested folders are albums too. `wav cd quality/Album_wav/` becomes its
   own album named by the relative path.
 
 Supported extensions: `.mp3 .wav .flac .ogg .m4a .aiff .aif`. Decoding goes

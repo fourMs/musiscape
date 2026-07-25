@@ -40,9 +40,9 @@ corpus.landscape(f)      # PCA coords, explained variance, loadings
 corpus.tonal_spread(f)   # circular concentration of tonal centers per album
 ```
 
-The **affinity diagonal** is each album's internal consistency — one
+The affinity diagonal is each album's internal consistency — one
 instrument and one mood score high, an eclectic album scores near zero.
-**`tonal_spread`** answers a question with no linear equivalent (key centers
+`tonal_spread` answers a question with no linear equivalent (key centers
 have no meaningful mean): a repertoire in neighbouring keys scores R near 1,
 one that wanders the whole circle near 0.
 

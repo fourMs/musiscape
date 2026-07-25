@@ -6,8 +6,8 @@ two tables, and musiscape renders a per-track card for each:
 ## `schaeffer` — the typology (TARTYP)
 
 Each track is segmented into onset-bounded *sound objects* and every object
-classified on a simplified TARTYP grid: **mass** N (tonic) / Y (variable) /
-X (complex) from spectral flatness and centroid drift, **facture** held /
+classified on a simplified TARTYP grid: mass N (tonic) / Y (variable) /
+X (complex) from spectral flatness and centroid drift, facture held /
 impulse (′) / iteration (″) from duration and 4–20 Hz envelope modulation.
 The card draws the objects on three mass lanes (ticks = impulses, hatching
 = iterations, solid blocks = held) with a TARTYP duration-share grid inset:
@@ -42,7 +42,7 @@ toward its periphery pole, so a track's morphology reads as one shape:
 
 ## Honesty
 
-These are **signal proxies for aural categories**. Schaeffer's typology and
+These are signal proxies for aural categories. Schaeffer's typology and
 morphology are acts of *reduced listening*; a threshold on spectral flatness
 is not. The proxies were calibrated on tonal instrumental corpora, and the
 scales on the TARSOM card reflect that calibration. In the tradition of
