@@ -154,5 +154,21 @@ def render_collection(coll: Collection, out_dir: str | Path,
 
 
 def notes_from_features(feats: list[dict]) -> dict:
-    """(album, track) → estimated key, for thumbnail annotations."""
-    return {(f["album"], f["track"]): f.get("key", "") for f in feats}
+    """(album, track) → "key · bpm" annotation for thumbnail title bars.
+
+    The BPM is the octave-corrected dominant period from the circular
+    pulse analysis; when pulse clarity is low (R < 0.1, i.e. rubato or
+    drifting material) it is prefixed with ``~`` — a nominal period, not
+    a felt tempo.
+    """
+    out = {}
+    for f in feats:
+        parts = []
+        if f.get("key"):
+            parts.append(f["key"])
+        bpm = f.get("pulse_bpm")
+        if bpm:
+            approx = "~" if f.get("pulse_R", 0.0) < 0.1 else ""
+            parts.append(f"{approx}{bpm:.0f} bpm")
+        out[(f["album"], f["track"])] = " · ".join(parts)
+    return out
