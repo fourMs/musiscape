@@ -1,7 +1,9 @@
 # Musiscape
 
+[![CI](https://github.com/fourMs/musiscape/actions/workflows/ci.yml/badge.svg)](https://github.com/fourMs/musiscape/actions/workflows/ci.yml)
+[![docs](https://github.com/fourMs/musiscape/actions/workflows/docs.yml/badge.svg)](https://fourms.github.io/musiscape/)
 [![PyPI version](https://img.shields.io/pypi/v/musiscape)](https://pypi.org/project/musiscape/)
-[![Documentation](https://img.shields.io/badge/docs-fourms.github.io%2Fmusiscape-blue)](https://fourms.github.io/musiscape/)
+[![Python](https://img.shields.io/pypi/pyversions/musiscape.svg)](https://pypi.org/project/musiscape/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 A toolbox for analysing music collections in the form of audio files in folders. The aim is to provide tools to visualise many tracks so you can compare them. It can help answer questions about how albums differ, which tracks resemble which, how internally consistent each album is, where the outliers live, and what categories the corpus falls into.
