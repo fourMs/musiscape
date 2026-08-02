@@ -20,8 +20,8 @@ pip install musiscape
 
 ## Quickstart
 
-A *collection* is simply a folder tree — each subfolder holding audio files
-(mp3/wav/flac/ogg/m4a) is an album:
+A *collection* is simply a folder tree, where each subfolder holding audio
+files (mp3/wav/flac/ogg/m4a) is an album:
 
 ```bash
 musiscape probe       ~/Music/my-collection    # what's here?
@@ -43,9 +43,10 @@ tonality discs (`--style vinyl`).
 
 `report` produces a per-collection `README.md` with an album table
 (note density, brightness, dynamics, minor-key share, internal consistency,
-key-space clustering R), overview figures, self-explaining categories
-("sparse, dark, drone-like" — signed z-scores of the distinguishing
-features, never just "cluster 3"), and the corpus extremes.
+key-space clustering R), overview figures, self-explaining categories, and
+the corpus extremes. A category is named from the signed z-scores of the
+features that distinguish it, so it reads as "sparse, dark, drone-like"
+rather than as "cluster 3".
 
 ## In Python
 
@@ -64,7 +65,7 @@ categorize.cluster(f)      # interpretable categories
 
 ## Combine with listening
 
-This toolbox is meant for quick visualisations and overviews. Combine it with listening!
+This toolbox is meant for quick visualisations and overviews. Combine it with listening.
 
 ## License
 
@@ -77,6 +78,6 @@ Oslo. They are separate packages with separate release cycles, but they are buil
 together and share several implementations, so a measure computed in one agrees with the same
 measure computed in another.
 
-- [Musical Gestures Toolbox](https://github.com/fourMs/MGT-python) (`musicalgestures`) — video and audio: motiongrams, videograms, and motion analysis from ordinary video files
-- [ambiscape](https://github.com/fourMs/ambiscape) — soundscapes: the sonic ambience of a place, across level, spectral, spatial, temporal, ecological and source descriptors
-- [micromotion](https://github.com/fourMs/micromotion) — human micromotion: quantity of motion from optical markers, accelerometers, respiration belts and force plates
+- [Musical Gestures Toolbox](https://github.com/fourMs/MGT-python) (`musicalgestures`)—video and audio: motiongrams, videograms, and motion analysis from ordinary video files
+- [ambiscape](https://github.com/fourMs/ambiscape)—soundscapes: the sonic ambience of a place, across level, spectral, spatial, temporal, ecological and source descriptors
+- [micromotion](https://github.com/fourMs/micromotion)—human micromotion: quantity of motion from optical markers, accelerometers, respiration belts and force plates

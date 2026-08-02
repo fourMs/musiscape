@@ -23,10 +23,10 @@ drones, pedals, large objects) are a planned extension.
 ## `tarsom` — the morphology (TARSOM)
 
 The *Tableau récapitulatif du solfège des objets musicaux* summarises seven
-morphological criteria. The card shows the track's measured position on
-each as a centre–periphery rose — every criterion a sector radiating from
-the centre pole (tonic, dark, smooth, slow, percussive, static, fixed)
-toward its periphery pole, so a track's morphology reads as one shape:
+morphological criteria. The card shows the track's measured position on each
+as a centre–periphery rose. Every criterion is a sector radiating from the
+centre pole (tonic, dark, smooth, slow, percussive, static, fixed) toward
+its periphery pole, so a track's morphology reads as one shape:
 
 | Criterion | Proxy | Scale |
 |---|---|---|
@@ -46,6 +46,6 @@ These are signal proxies for aural categories. Schaeffer's typology and
 morphology are acts of *reduced listening*; a threshold on spectral flatness
 is not. The proxies were calibrated on tonal instrumental corpora, and the
 scales on the TARSOM card reflect that calibration. In the tradition of
-Lasse Thoresen's aural sonology — where the analyst hears and then notates —
-treat these cards as machine-made *drafts for the ear*: a place to start
-listening, and to disagree with.
+Lasse Thoresen's aural sonology—where the analyst hears and then
+notates—treat these cards as machine-made *drafts for the ear*: a place to
+start listening, and to disagree with.

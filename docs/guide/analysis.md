@@ -20,9 +20,9 @@ track (cached in `features.json`, extracted in parallel):
 | `fifths_center`, `fifths_R` | tonal center and focus on the circle of fifths |
 | `tartyp` | duration-shares of Schaeffer object types |
 
-The set is deliberately small enough to explain — the interpretable
-counterpart to embedding models: weaker raw similarity, but every axis has
-a musical name.
+The set is deliberately small enough to explain, and it is the interpretable
+counterpart to embedding models. The trade is weaker raw similarity, but
+every axis has a musical name.
 
 !!! note "Tempo, honestly"
     Beat trackers fail on rubato material, so two numbers are kept apart:
@@ -40,11 +40,11 @@ corpus.landscape(f)      # PCA coords, explained variance, loadings
 corpus.tonal_spread(f)   # circular concentration of tonal centers per album
 ```
 
-The affinity diagonal is each album's internal consistency — one
-instrument and one mood score high, an eclectic album scores near zero.
-`tonal_spread` answers a question with no linear equivalent (key centers
-have no meaningful mean): a repertoire in neighbouring keys scores R near 1,
-one that wanders the whole circle near 0.
+The affinity diagonal is each album's internal consistency. An album with
+one instrument and one mood scores high, while an eclectic album scores near
+zero. `tonal_spread` answers a question with no linear equivalent, since key
+centres have no meaningful mean: a repertoire in neighbouring keys scores R
+near 1, and one that wanders the whole circle near 0.
 
 ## Categories
 
@@ -56,5 +56,5 @@ its three most distinguishing features as signed z-scores:
 category 2 (15): centroid_hz +1.4, zcr +1.2, flatness +1.0
 ```
 
-— i.e. "bright, noisy, inharmonic": the textural tracks, wherever their
-album membership put them. A category is never just "cluster 3".
+That reads as "bright, noisy, inharmonic": the textural tracks, wherever
+their album membership put them. A category is never just "cluster 3".

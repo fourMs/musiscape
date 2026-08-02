@@ -1,9 +1,9 @@
 # Quickstart
 
-A *collection* is simply a folder tree — every subfolder holding audio files
-(wav/mp3/flac/ogg/m4a) becomes an album, every file a track. No metadata
-tags required: the folder structure people already keep their music in is
-the ground truth.
+A *collection* is simply a folder tree, where every subfolder holding audio
+files (wav/mp3/flac/ogg/m4a) becomes an album and every file a track. No
+metadata tags are required: the folder structure people already keep their
+music in is the ground truth.
 
 ```bash
 musiscape probe       ~/Music/my-collection    # what's here?
@@ -16,9 +16,9 @@ musiscape poster      ~/Music/my-collection    # collection barcode poster
 ```
 
 Everything lands in `<collection>/analysis/` by default (`-o` overrides).
-Feature extraction is cached in `features.json` — delete it to force
-re-extraction. `--workers N` parallelises; `--duration S` analyses only the
-first S seconds per track.
+Feature extraction is cached in `features.json`, which you can delete to
+force re-extraction. `--workers N` parallelises; `--duration S` analyses
+only the first S seconds per track.
 
 `report` produces a per-collection `README.md` with an album table,
 overview figures, self-explaining categories, and the corpus extremes:

@@ -12,56 +12,57 @@ musiscape thumbnails <folder> --style combo
 
 ## Spectrogram family
 
-`mel` (default) — timbre and texture; `chroma` — harmony over time;
-`tempo` — rhythmic periodicity; `combo` — all three stacked:
+- `mel` (default)—timbre and texture
+- `chroma`—harmony over time
+- `tempo`—rhythmic periodicity
+- `combo`—all three stacked
 
 ![combo](../img/style_combo.png)
 
-## Color codes
+## Colour codes
 
-`barcode` — each moment's hue is its position on the circle of fifths,
-saturation its tonal focus, brightness its loudness:
+- `barcode`—each moment's hue is its position on the circle of fifths, its
+  saturation is the tonal focus, and its brightness is the loudness
+- `wave`—the Freesound-style amplitude envelope, coloured by spectral
+  centroid (dark blue = dark timbre, red = bright)
 
 ![barcode](../img/style_barcode.png)
-
-`wave` — Freesound-style: the amplitude envelope colored by spectral
-centroid (dark blue = dark timbre, red = bright):
-
 ![wave](../img/style_wave.png)
 
 ## Structure
 
-`ssm` — self-similarity matrix: musical form as texture.
-`keyscape` — Sapp-style triangle: every window at every time scale
-colored by its key (hue = tonic on the fifths circle, light = major,
-dark = minor). `arcs` — Shape-of-Song repetition arcs:
+- `ssm`—a self-similarity matrix, so that musical form reads as texture
+- `keyscape`—a Sapp-style triangle, with every window at every time scale
+  coloured by its key (hue = tonic on the fifths circle, light = major,
+  dark = minor)
+- `arcs`—Shape-of-Song repetition arcs
 
 ![keyscape](../img/style_keyscape.png)
 ![arcs](../img/style_arcs.png)
 
 ## Circular forms
 
-`vinyl` — the track as a tonality disc (one revolution, harmony as hue,
-loudness as radius) with the Freesound waveform underneath. `spiral` —
-time-integrated energy on the Shepard helix (angle = pitch class, radius =
-octave — the only view that shows register). `tonnetz` — the harmony's
-path on the circle-of-fifths plane:
+- `vinyl`—the track as a tonality disc (one revolution, harmony as hue,
+  loudness as radius) with the Freesound waveform underneath
+- `spiral`—time-integrated energy on the Shepard helix (angle = pitch
+  class, radius = octave), the only view that shows register
+- `tonnetz`—the harmony's path on the circle-of-fifths plane
 
 ![vinyl](../img/style_vinyl.png)
 ![spiral](../img/style_spiral.png)
 
 ## Rhythm
 
-`rhythm` — a Poincaré portrait of successive inter-onset intervals
-(metric playing collapses to points, rubato spreads into clouds), with a
-beat-wheel inset: onset phases on the dominant-period circle and the
+`rhythm` draws a Poincaré portrait of successive inter-onset intervals,
+where metric playing collapses to points and rubato spreads into clouds. A
+beat-wheel inset adds the onset phases on the dominant-period circle and the
 pulse-clarity resultant arrow:
 
 ![rhythm](../img/style_rhythm.png)
 
 ## Stereo field
 
-`stereo` — where the music sits in the stereo image: a pan-by-frequency
+`stereo` shows where the music sits in the stereo image: a pan-by-frequency
 spectrogram (blue = left, red = right, ink strength = energy) with a
 goniometer inset, over a smoothed width-and-correlation timeline. Mono
 recordings degrade gracefully. For multichannel and ambisonic material,
@@ -83,8 +84,8 @@ musiscape poster <folder> --style vinyl   # grid of tonality discs
 
 ![poster](../img/poster.png)
 
-Albums read as color families: a harmonically coherent album shares hues, a
-wandering one doesn't, and weakly tonal material (drones) washes out to low
+Albums read as colour families: a harmonically coherent album shares hues, a
+wandering one does not, and weakly tonal material (drones) washes out to low
 saturation.
 
 ## Sonic thumbnails
@@ -93,6 +94,6 @@ Not everything worth summarising is visual. `musiscape sonic <folder>`
 renders a ~12-second audio summary per track: a montage of the most
 representative passage (the window whose features sit closest to the whole
 track), the climax, and the most contrasting energetic section, in
-chronological order with crossfades — plus one concatenated medley file
-per album for fast browsing by ear. Selection is deterministic and
+chronological order with crossfades. Each album also gets one concatenated
+medley file for fast browsing by ear. Selection is deterministic and
 explainable; no learned model decides what matters.
