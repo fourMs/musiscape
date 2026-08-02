@@ -69,3 +69,14 @@ This toolbox is meant for quick visualisations and overviews. Combine it with li
 ## License
 
 MIT.
+
+## Related toolboxes
+
+These four toolboxes come out of the [fourMs lab](https://github.com/fourMs) at the University of
+Oslo. They are separate packages with separate release cycles, but they are built to be used
+together and share several implementations, so a measure computed in one agrees with the same
+measure computed in another.
+
+- [Musical Gestures Toolbox](https://github.com/fourMs/MGT-python) (`musicalgestures`) — video and audio: motiongrams, videograms, and motion analysis from ordinary video files
+- [ambiscape](https://github.com/fourMs/ambiscape) — soundscapes: the sonic ambience of a place, across level, spectral, spatial, temporal, ecological and source descriptors
+- [micromotion](https://github.com/fourMs/micromotion) — human micromotion: quantity of motion from optical markers, accelerometers, respiration belts and force plates
