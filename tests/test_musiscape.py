@@ -69,7 +69,7 @@ def test_stereo_card(tmp_path):
     import soundfile as sf
     from musiscape.io import Track
     from musiscape import thumbnails
-    from tests.conftest import plucks, SR
+    from conftest import plucks, SR   # pytest puts the test dir on sys.path; "tests" is not a package
     y = plucks(12.0, 0.25, 330.0)
     pan = np.linspace(0.1, 0.9, len(y))          # drift left → right
     stereo = np.stack([y * (1 - pan), y * pan], axis=1)
