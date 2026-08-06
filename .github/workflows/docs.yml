@@ -7,10 +7,16 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,4 +26,20 @@ jobs:
         with:
           python-version: "3.x"
       - run: pip install -e . mkdocs-material "mkdocstrings[python]" mkdocs-git-revision-date-localized-plugin
-      - run: mkdocs gh-deploy --force
+      # This repo's Pages source is "GitHub Actions", so gh-deploy pushes to
+      # the gh-pages branch were never published (site was stale since July).
+      # Deploy through the Pages artifact flow instead.
+      - run: mkdocs build --clean
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
