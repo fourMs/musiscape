@@ -6,6 +6,15 @@ that date are summaries of what the commits say rather than notes written at the
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/); the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html) loosely while pre-1.0.
 
+## [0.3.2] — 2026-08-06
+
+### Changed
+- Documentation overhaul: beginner-oriented README, verified command
+  reference, neutral voice throughout docs, wiki, and docstrings; the
+  seventeenth thumbnail style (`trajectory`) is now documented; missing
+  `sonic` and `extract` commands added to the guides; new demo figures
+  from genuine tool output.
+
 ## [0.3.1] — 2026-08-03
 
 ### Fixed
