@@ -1,8 +1,8 @@
 """Overview figures: fingerprints, landscape, affinity.
 
-Categorical album colors use a fixed, colorblind-validated order (never
+Categorical album colours use a fixed, colour-blind-validated order (never
 cycled); the affinity matrix is a blue/red diverging scale around zero.
-Past eight albums the palette folds — facet or filter rather than invent
+Past eight albums the palette folds—facet or filter rather than invent
 a ninth hue.
 """
 from __future__ import annotations
@@ -33,7 +33,7 @@ FINGERPRINT_MEASURES = [
 
 
 def album_colors(names: list[str]) -> dict[str, str]:
-    """Stable album→color map in first-appearance order."""
+    """Stable album→colour map in first-appearance order."""
     return {a: PALETTE[i % len(PALETTE)] for i, a in enumerate(names)}
 
 
@@ -70,7 +70,7 @@ def fingerprints(stats: dict, out_path: str | Path, title: str = ""):
 
 def landscape_plot(feats: list[dict], land: dict, out_path: str | Path,
                    title: str = ""):
-    """PCA scatter, one color per album, direct legend."""
+    """PCA scatter, one colour per album, direct legend."""
     names = albums_of(feats)
     colors = album_colors(names)
     xy = np.array(land["coords"])

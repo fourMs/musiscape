@@ -14,6 +14,7 @@ def _out(args, coll) -> Path:
 
 
 def main(argv=None):
+    """Entry point for the ``musiscape`` command."""
     p = argparse.ArgumentParser(
         prog="musiscape",
         description="Analyse a music collection: corpus fingerprints, "

@@ -3,7 +3,7 @@
 Runs the full pipeline (extract → stats → landscape → similarity → tonal
 spread → clusters), writes the figures, and renders a markdown report with
 an overview table, album fingerprints, affinity, categories, and notable
-extremes — the file you open first when handed a folder of music.
+extremes—the file to open first when handed a folder of music.
 """
 from __future__ import annotations
 

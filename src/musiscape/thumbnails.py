@@ -2,44 +2,44 @@
 
 Each track becomes one card, in a choice of representations:
 
-- ``mel`` / ``chroma`` / ``tempo`` / ``combo`` — the spectrogram family
+- ``mel`` / ``chroma`` / ``tempo`` / ``combo``—the spectrogram family
   (timbre & texture, harmony over time, rhythmic periodicity, all three);
-- ``barcode`` — harmony as color: each moment's hue is its position on the
+- ``barcode``—harmony as colour: each moment's hue is its position on the
   circle of fifths, saturation its tonal focus, brightness its loudness;
-- ``ssm`` — self-similarity matrix: musical *form* as texture (repetition
+- ``ssm``—self-similarity matrix: musical *form* as texture (repetition
   blocks, sections, drone slabs);
-- ``trajectory`` — the piece as a smoothed path through its own timbre
-  space (MFCC PCA), colored start → end;
-- ``keyscape`` — Sapp-style triangle: every analysis window at every time
-  scale colored by its Krumhansl–Schmuckler key (hue = tonic on the circle
+- ``trajectory``—the piece as a smoothed path through its own timbre
+  space (MFCC PCA), coloured start → end;
+- ``keyscape``—Sapp-style triangle: every analysis window at every time
+  scale coloured by its Krumhansl–Schmuckler key (hue = tonic on the circle
   of fifths, light = major, dark = minor);
-- ``rhythm`` — Poincaré portrait of successive inter-onset intervals:
+- ``rhythm``—Poincaré portrait of successive inter-onset intervals:
   metric playing collapses to points, rubato spreads into clouds;
-- ``wave`` — Freesound-style waveform: the amplitude envelope with each
-  moment colored by its spectral centroid (dark blue = dark timbre,
+- ``wave``—Freesound-style waveform: the amplitude envelope with each
+  moment coloured by its spectral centroid (dark blue = dark timbre,
   red = bright), so timbre rides on the waveform itself;
-- ``vinyl`` — the track as a tonality disc (12 o'clock = start,
+- ``vinyl``—the track as a tonality disc (12 o'clock = start,
   clockwise; hue = harmony on the circle of fifths, radius = loudness),
-  with the Freesound-style centroid-colored waveform as the strip
+  with the Freesound-style centroid-coloured waveform as the strip
   underneath;
-- ``spiral`` — time-integrated energy on the Shepard helix (angle = pitch
+- ``spiral``—time-integrated energy on the Shepard helix (angle = pitch
   class, radius = octave): the only view that shows register;
-- ``tonnetz`` — the harmony's path on the circle-of-fifths plane of the
-  tonal centroid (Harte's tonnetz), colored start → end;
-- ``arcs`` — Shape-of-Song-style arc diagram: repeated sections found in
+- ``tonnetz``—the harmony's path on the circle-of-fifths plane of the
+  tonal centroid (Harte's tonnetz), coloured start → end;
+- ``arcs``—Shape-of-Song-style arc diagram: repeated sections found in
   the self-similarity structure joined by arcs over the timeline.
 
-- ``stereo`` — the stereo field: a pan-by-frequency spectrogram (blue =
+- ``stereo``—the stereo field: a pan-by-frequency spectrogram (blue =
   left, red = right, ink strength = energy) with a goniometer inset, over
   a width-and-correlation timeline. For multichannel and ambisonic
   spatial analysis see ``ambiscape.spatial``;
-- ``tarsom`` — the track's position on Schaeffer's seven morphological
+- ``tarsom``—the track's position on Schaeffer's seven morphological
   criteria (TARSOM: masse, timbre harmonique, grain, allure, dynamique,
   profil mélodique, profil de masse) as a centre–periphery rose: each
   criterion a sector radiating from the centre pole (tonic, dark, smooth,
   slow, percussive, static, fixed) toward its periphery pole (complex,
   bright, granular, fast, soft, mobile, evolving);
-- ``schaeffer`` — the track's sound objects on a typo-morphology (TARTYP)
+- ``schaeffer``—the track's sound objects on a typo-morphology (TARTYP)
   timeline: three mass lanes (N tonic / Y variable / X complex), facture
   as mark style (impulse ticks, hatched iterations, solid held blocks),
   with a TARTYP-grid fingerprint inset. Uses the same signal proxies and
@@ -49,7 +49,7 @@ The ``rhythm`` card carries a beat-wheel inset: onset phases on the
 dominant-period circle with the pulse-clarity resultant arrow.
 
 Albums additionally get a contact sheet, and :func:`poster` stacks every
-track's barcode into a single collection image where albums read as color
+track's barcode into a single collection image where albums read as colour
 families. Thumbnails are meant for browsing a collection visually.
 """
 from __future__ import annotations
@@ -98,7 +98,7 @@ def _feats_2hz(y, sr):
 
 
 def barcode_rgb(C, rms):
-    """RGB strip (n×3) from 2 Hz chroma + RMS — the barcode's colors."""
+    """RGB strip (n×3) from 2 Hz chroma + RMS—the barcode's colours."""
     z = (C * np.exp(1j * _FIFTHS)[:, None]).sum(0) / (C.sum(0) + 1e-9)
     hue = (np.angle(z) / (2 * np.pi)) % 1.0
     sat = np.clip(np.abs(z) * 1.6, 0, 1)
@@ -108,7 +108,7 @@ def barcode_rgb(C, rms):
 
 
 def wave_colors(y, sr, cols=1200):
-    """Amplitude envelope + turbo-mapped spectral-centroid colors."""
+    """Amplitude envelope + turbo-mapped spectral-centroid colours."""
     import librosa
     cent = librosa.feature.spectral_centroid(y=y, sr=sr, hop_length=512)[0]
     step = max(1, len(y) // cols)
@@ -879,8 +879,8 @@ def poster(coll: Collection, out_dir: str | Path, workers: int = 4,
            strip_w: int = 1200, strip_h: int = 16,
            style: str = "barcode") -> Path:
     """One image for the whole collection. ``style="barcode"`` stacks every
-    track as a horizontal color strip; ``style="vinyl"`` lays the tracks
-    out as a grid of disc glyphs. Albums read as color families either
+    track as a horizontal colour strip; ``style="vinyl"`` lays the tracks
+    out as a grid of disc glyphs. Albums read as colour families either
     way. → ``<out_dir>/poster.png``"""
     if style == "vinyl":
         return _vinyl_poster(coll, Path(out_dir), workers)
@@ -929,8 +929,8 @@ def notes_from_features(feats: list[dict]) -> dict:
     (``tempo_bpm``, librosa's prior-based estimator, which targets the
     felt beat rather than the subdivision the phase-lock peaks on);
     when pulse clarity is low (R < 0.1, i.e. rubato or drifting
-    material) it is prefixed with ``~`` — a nominal tempo, not a felt
-    one. Falls back to ``pulse_bpm`` for older feature files.
+    material) it is prefixed with ``~``—a nominal tempo, not a felt
+    one. Falls back to ``pulse_bpm`` when ``tempo_bpm`` is absent.
     """
     out = {}
     for f in feats:

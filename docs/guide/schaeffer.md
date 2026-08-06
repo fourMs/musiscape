@@ -3,7 +3,7 @@
 Pierre Schaeffer's *Traité des objets musicaux* summarises its analysis in
 two tables, and musiscape renders a per-track card for each:
 
-## `schaeffer` — the typology (TARTYP)
+## `schaeffer`—the typology (TARTYP)
 
 Each track is segmented into onset-bounded *sound objects* and every object
 classified on a simplified TARTYP grid: mass N (tonic) / Y (variable) /
@@ -20,7 +20,7 @@ statistics. The simplified grid covers Schaeffer's central *balanced*
 objects; the full table's redundant and eccentric classes (homogeneous
 drones, pedals, large objects) are a planned extension.
 
-## `tarsom` — the morphology (TARSOM)
+## `tarsom`—the morphology (TARSOM)
 
 The *Tableau récapitulatif du solfège des objets musicaux* summarises seven
 morphological criteria. The card shows the track's measured position on each

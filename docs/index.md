@@ -28,6 +28,8 @@ centres on the circle of fifths, and object-level TARTYP / TARSOM proxies.
   morphology roses. See the [gallery](guide/thumbnails.md).
 - Posters—the whole collection as stacked harmony barcodes or a grid
   of tonality discs.
+- Sonic thumbnails—a ~12-second audio summary per track, plus one
+  medley file per album, for browsing a collection by ear.
 - Report—one command renders everything into a per-collection
   `README.md`.
 
@@ -39,7 +41,3 @@ Key estimates are Krumhansl–Schmuckler correlations (indicative for drones);
 pulse clarity conflates slow tempo drift with rubato; Schaeffer classes are
 corpus-calibrated proxies for aural categories. Treat every category and
 card as a draft for listening, not a verdict.
-
-<!-- TODO(2026-08-02): `trajectory` is the seventeenth entry in `STYLES`
-     (src/musiscape/thumbnails.py) and is documented nowhere. Either document it or
-     remove it, and reconcile the style count stated in README.md and the guide. -->

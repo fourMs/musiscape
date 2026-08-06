@@ -3,7 +3,7 @@
 Where the visual thumbnails answer "what does this piece look like", the
 sonic thumbnail answers "what does it sound like" in ~12 seconds: a
 montage of up to three segments chosen deterministically from the track's
-own structure — the most *representative* passage (the window whose
+own structure—the most *representative* passage (the window whose
 features are closest to the whole track, in the audio-thumbnailing
 tradition of Bartsch & Wakefield), the *climax* (peak energy), and the
 most *contrasting* section that still carries energy. Segments are placed

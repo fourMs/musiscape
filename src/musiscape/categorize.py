@@ -2,7 +2,7 @@
 
 Tracks are clustered in the standardised feature space (k-means, k chosen
 by silhouette unless given), and every cluster is described by the features
-that most distinguish it from the rest of the corpus — so a category is
+that most distinguish it from the rest of the corpus—so a category is
 never just "cluster 3", it is "sparse, dark, drone-like". This is the
 interpretable counterpart to embedding-space clustering: fewer dimensions,
 weaker similarity, but every axis has a musical name.

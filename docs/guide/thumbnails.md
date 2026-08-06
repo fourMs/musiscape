@@ -32,11 +32,16 @@ musiscape thumbnails <folder> --style combo
 ## Structure
 
 - `ssm`—a self-similarity matrix, so that musical form reads as texture
+- `trajectory`—the piece as a smoothed path through its own timbre space
+  (a PCA of the MFCC frames), coloured from start to end, so a piece that
+  keeps returning to one sound draws a knot and a piece that travels draws
+  a line
 - `keyscape`—a Sapp-style triangle, with every window at every time scale
   coloured by its key (hue = tonic on the fifths circle, light = major,
   dark = minor)
 - `arcs`—Shape-of-Song repetition arcs
 
+![trajectory](../img/style_trajectory.png)
 ![keyscape](../img/style_keyscape.png)
 ![arcs](../img/style_arcs.png)
 

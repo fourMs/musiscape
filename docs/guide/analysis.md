@@ -7,9 +7,9 @@ track (cached in `features.json`, extracted in parallel):
 
 | Feature | Musical reading |
 |---|---|
-| `onset_rate` | note density — plucked events per second |
+| `onset_rate` | note density—plucked events per second |
 | `centroid_hz` | brightness (spectral centroid) |
-| `flatness` | inharmonic texture — buzz, bowls, breath |
+| `flatness` | inharmonic texture—buzz, bowls, breath |
 | `zcr`, `flux` | surface noisiness, spectral change |
 | `perc_ratio` | percussive share (harmonic/percussive separation) |
 | `dyn_range_db` | loud-to-quiet span within the track |
@@ -17,7 +17,7 @@ track (cached in `features.json`, extracted in parallel):
 | `key`, `key_conf` | Krumhansl–Schmuckler estimate + correlation |
 | `pulse_R`, `pulse_bpm` | circular pulse clarity and its period |
 | `tempo_bpm` | perceptually-weighted tempo (what cards display) |
-| `fifths_center`, `fifths_R` | tonal center and focus on the circle of fifths |
+| `fifths_center`, `fifths_R` | tonal centre and focus on the circle of fifths |
 | `tartyp` | duration-shares of Schaeffer object types |
 
 The set is deliberately small enough to explain, and it is the interpretable
@@ -37,7 +37,7 @@ every axis has a musical name.
 corpus.album_stats(f)    # mean/std/min/max per feature, keys, minor share
 corpus.similarity(f)     # cosine matrix + album affinity & consistency
 corpus.landscape(f)      # PCA coords, explained variance, loadings
-corpus.tonal_spread(f)   # circular concentration of tonal centers per album
+corpus.tonal_spread(f)   # circular concentration of tonal centres per album
 ```
 
 The affinity diagonal is each album's internal consistency. An album with

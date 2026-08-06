@@ -1,11 +1,12 @@
-"""Collections, albums, tracks — the folder-shaped data model.
+"""Collections, albums, tracks—the folder-shaped data model.
 
 A *collection* is a folder tree of audio files. Every directory that
 directly contains audio becomes an *album* (named by its path relative to
 the root; files sitting in the root itself form the album ``"."``), and
 every audio file a *track* named by its stem. Metadata tags are deliberately
-not required — the folder structure people already keep their music in is
-the ground truth here; the optional ``[tags]`` extra can enrich titles later.
+not required—the folder structure people already keep their music in is
+the ground truth here; the optional ``[tags]`` extra is reserved for
+metadata enrichment.
 """
 from __future__ import annotations
 
@@ -17,31 +18,37 @@ AUDIO_EXTS = {".mp3", ".wav", ".flac", ".ogg", ".m4a", ".aiff", ".aif"}
 
 @dataclass
 class Track:
+    """One audio file: its path and the album it belongs to."""
     path: Path
     album: str
 
     @property
     def title(self) -> str:
+        """Track title, taken from the filename stem."""
         return self.path.stem
 
 
 @dataclass
 class Album:
+    """One folder of tracks, named by its path relative to the root."""
     name: str
     tracks: list[Track] = field(default_factory=list)
 
 
 @dataclass
 class Collection:
+    """A scanned folder tree: the root path and its albums."""
     root: Path
     albums: list[Album]
 
     @property
     def tracks(self) -> list[Track]:
+        """Flat list of every track across all albums."""
         return [t for a in self.albums for t in a.tracks]
 
     @property
     def album_names(self) -> list[str]:
+        """Album names in scan (sorted-path) order."""
         return [a.name for a in self.albums]
 
 

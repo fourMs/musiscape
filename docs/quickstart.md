@@ -6,19 +6,22 @@ metadata tags are required: the folder structure people already keep their
 music in is the ground truth.
 
 ```bash
-musiscape probe       ~/Music/my-collection    # what's here?
+musiscape probe       ~/Music/my-collection    # list albums and tracks
 musiscape report      ~/Music/my-collection    # everything → analysis/README.md
+musiscape extract     ~/Music/my-collection    # features only → features.json
 musiscape fingerprint ~/Music/my-collection    # per-album profile bars
 musiscape landscape   ~/Music/my-collection    # PCA map + affinity matrix
 musiscape categorize  ~/Music/my-collection    # k-means with named signatures
 musiscape thumbnails  ~/Music/my-collection --style combo
 musiscape poster      ~/Music/my-collection    # collection barcode poster
+musiscape sonic       ~/Music/my-collection    # ~12 s audio summary per track
 ```
 
 Everything lands in `<collection>/analysis/` by default (`-o` overrides).
 Feature extraction is cached in `features.json`, which you can delete to
 force re-extraction. `--workers N` parallelises; `--duration S` analyses
-only the first S seconds per track.
+only the first S seconds per track; `-k` fixes the number of categories
+instead of choosing it by silhouette.
 
 `report` produces a per-collection `README.md` with an album table,
 overview figures, self-explaining categories, and the corpus extremes:

@@ -1,13 +1,12 @@
-"""Per-track feature extraction — the interpretable descriptor set.
+"""Per-track feature extraction—the interpretable descriptor set.
 
 Every number here has a musicological reading: note density (plucked events
 per second), brightness (spectral centroid), inharmonic texture (spectral
 flatness), dynamic range, harmonic/percussive balance, estimated key
 (Krumhansl–Schmuckler), pitch-class entropy, pulse clarity and tonal focus
 (circular statistics via :mod:`ambiscape.music`), and a Schaeffer TARTYP
-object profile. The set was developed on a five-album solo-harp catalogue
-(57 tracks) and is meant to stay small enough to explain, not to compete
-with embedding models on raw similarity.
+object profile. The set is deliberately small enough to explain; it does
+not compete with embedding models on raw similarity.
 
 ``extract_collection`` caches to ``features.json`` in the output folder and
 runs tracks in parallel; delete the file to force re-extraction.

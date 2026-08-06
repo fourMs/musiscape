@@ -1,9 +1,9 @@
-"""Corpus-level statistics — what existing per-track tools don't do.
+"""Corpus-level statistics—the questions per-track tools do not answer.
 
 The questions answered here are about the *collection*: how do its albums
 differ (fingerprints), which tracks resemble which (similarity, landscape),
 how internally consistent is each album, and how tightly does each cluster
-in key space (a circular statistic — key centers have no linear mean).
+in key space (a circular statistic—key centres have no linear mean).
 """
 from __future__ import annotations
 
@@ -68,7 +68,7 @@ def similarity(feats: list[dict]) -> dict:
 
     ``affinity[a][b]`` is the mean similarity between the tracks of albums
     a and b; the diagonal (mean *pairwise* similarity within an album) is
-    its internal consistency — one instrument and one mood score high,
+    its internal consistency—one instrument and one mood score high,
     an eclectic album scores near zero.
     """
     Z = feature_matrix(feats)
@@ -93,7 +93,7 @@ def similarity(feats: list[dict]) -> dict:
 
 
 def tonal_spread(feats: list[dict]) -> dict:
-    """Per-album concentration of tonal centers on the circle of fifths."""
+    """Per-album concentration of tonal centres on the circle of fifths."""
     from ambiscape.music import tonal_center_spread
     out = {}
     for a in albums_of(feats):
