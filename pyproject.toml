@@ -4,7 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "musiscape"
-version = "0.3.2"
+# Single source of truth: src/musiscape/__init__.py.
+# __version__ had drifted from the packaged version (0.3.2 shipped
+# reporting 0.3.1) because the bump touched only this file, so the
+# number now lives in one place and setuptools reads it from there.
+dynamic = ["version"]
 description = "A toolbox for analysing music collections: corpus fingerprints, similarity landscapes, and honest categorisation from folders of audio files"
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -24,6 +28,9 @@ tags = ["mutagen>=1.46"]
 
 [project.scripts]
 musiscape = "musiscape.cli:main"
+
+[tool.setuptools.dynamic]
+version = { attr = "musiscape.__version__" }
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -6,6 +6,27 @@ that date are summaries of what the commits say rather than notes written at the
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/); the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html) loosely while pre-1.0.
 
+## [0.3.3] — 2026-08-08
+
+### Fixed
+- The package version has one source. `__version__` in
+  `src/musiscape/__init__.py` is now the only place the number is written,
+  and setuptools reads it from there through a dynamic version; the static
+  `version` in `pyproject.toml` is gone. The two had drifted: 0.3.2 was
+  released reporting itself as 0.3.1, because that bump edited
+  `pyproject.toml` alone. Anything citing this toolbox by version is
+  otherwise citing a number the installed package does not confirm.
+  `tests/test_version.py` fails if a static version reappears in
+  `pyproject.toml`, if the build stops reading the module attribute, or if
+  the number setuptools would package differs from the one the module
+  reports.
+
+### Changed
+- Documentation deploys through the Pages artifact flow, and the docs
+  carry git revision dates (the house pattern across the toolboxes).
+- `site/`, the local mkdocs build output, is ignored rather than sitting
+  untracked in the working tree.
+
 ## [0.3.2] — 2026-08-06
 
 ### Changed
