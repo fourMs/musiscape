@@ -24,6 +24,23 @@ The set is deliberately small enough to explain, and it is the interpretable
 counterpart to embedding models. The trade is weaker raw similarity, but
 every axis has a musical name.
 
+!!! note "Very long tracks"
+    Analysing a track costs memory in proportion to its length: the
+    spectrogram, the harmonic/percussive separation and the constant-Q
+    chroma each hold the whole signal. Three quarters of an hour of audio
+    needs several gigabytes in one worker, and if the operating system
+    kills that worker the process is simply gone — no exception is raised,
+    and the pool it was running in breaks.
+
+    `extract_collection` survives this. It records what completed, then
+    retries the rest one at a time in their own process with the analysis
+    window capped to `retry_cap_s` (default 600 s), so a track that has
+    already proved fatal is analysed on a window that fits. Capped results
+    carry `analysis_capped_s`, so a shortened window is visible in the
+    output rather than looking like a short track. Nothing is capped on the
+    first attempt, so ordinary collections are unaffected; pass
+    `retry_cap_s=None` to retry at full length instead.
+
 !!! note "Tempo, honestly"
     Beat trackers fail on rubato material, so two numbers are kept apart:
     `pulse_R` measures *metric lock* (circular concentration of onset

@@ -6,6 +6,31 @@ that date are summaries of what the commits say rather than notes written at the
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/); the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html) loosely while pre-1.0.
 
+## [0.4.0] — 2026-08-08
+
+### Fixed
+- A worker killed by the operating system no longer loses the whole
+  collection. Extracting features from a very long track costs several
+  gigabytes in one process --- a three-quarter-hour span needed over six,
+  and the kernel took the worker --- and that is not an exception: the
+  process is gone, so the executor breaks and every future still pending
+  dies with it. `extract_collection` used `ProcessPoolExecutor.map`, which
+  re-raises on the first broken future, so one unlucky track cost all the
+  others. Found on a domestic recording whose longest music span ran to
+  forty-six minutes: it took the worker and seventy-one other tracks went
+  with it, while the stage reported success.
+
+### Added
+- Tracks whose worker died are retried one at a time in their own process,
+  with the analysis window capped to `retry_cap_s` (default 600 s) so the
+  retry fits in memory. A capped result records `analysis_capped_s`, so a
+  shortened window is visible in the output rather than implied by a
+  duration that looks like a short track. `retry_cap_s=None` retries at
+  full length, which will usually be killed again.
+- Nothing is capped on the first attempt, so ordinary collections are
+  extracted exactly as before. Only a track that has already proved fatal
+  is analysed on a shorter window.
+
 ## [0.3.3] — 2026-08-08
 
 ### Fixed

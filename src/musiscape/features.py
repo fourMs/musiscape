@@ -107,35 +107,118 @@ def extract_track(y: np.ndarray, sr: int) -> dict:
 
 
 def _work(job: tuple) -> dict | None:
-    path, album, sr, duration = job
+    path, album, sr, duration = job[:4]
+    capped = job[4] if len(job) > 4 else False
     try:
         t = Track(path=Path(path), album=album)
         y, sr = load(t, sr=sr, duration=duration)
         feat = extract_track(y, sr)
         feat.update({"album": album, "track": t.title})
-        print(f"[{album}] {t.title}", flush=True)
+        if capped:
+            feat["analysis_capped_s"] = duration
+        print(f"[{album}] {t.title}"
+              + (f" (capped to {duration:.0f}s)" if capped else ""), flush=True)
         return feat
     except Exception as e:                                # noqa: BLE001
         print(f"ERROR [{album}] {path}: {e}", flush=True)
         return None
 
 
+def _run_pool(indexed_jobs: list, workers: int, fn=_work) -> dict:
+    """Run jobs in a process pool; return ``{index: result}`` for those done.
+
+    A worker killed by the operating system does not raise an exception in
+    the worker --- the process is gone, so the executor breaks and every
+    future still pending dies with it. Returning what completed lets the
+    caller retry the rest instead of losing the whole collection, which is
+    what ``ProcessPoolExecutor.map`` does when it re-raises on the first
+    broken future.
+
+    The case seen in practice is an out-of-memory kill on a very long
+    track: analysing three quarters of an hour of audio costs several
+    gigabytes in one worker, and the kernel takes the process.
+    """
+    from concurrent.futures import ProcessPoolExecutor, as_completed
+    from concurrent.futures.process import BrokenProcessPool
+
+    done: dict = {}
+    try:
+        with ProcessPoolExecutor(max_workers=workers) as ex:
+            futs = {ex.submit(fn, j): i for i, j in indexed_jobs}
+            for f in as_completed(futs):
+                try:
+                    r = f.result()
+                except BrokenProcessPool:
+                    continue          # its worker died; the caller retries
+                except Exception as e:                    # noqa: BLE001
+                    print(f"ERROR job {futs[f]}: {e}", flush=True)
+                    continue
+                if r:
+                    done[futs[f]] = r
+    except BrokenProcessPool:
+        pass                          # shutdown of a broken pool
+    return done
+
+
+def _run_isolated(job: tuple, fn=_work) -> dict | None:
+    """Run one job in its own pool, so a second kill costs only this job."""
+    from concurrent.futures import ProcessPoolExecutor
+    from concurrent.futures.process import BrokenProcessPool
+    try:
+        with ProcessPoolExecutor(max_workers=1) as ex:
+            return ex.submit(fn, job).result()
+    except BrokenProcessPool:
+        print(f"ERROR [{job[1]}] {job[0]}: worker killed again, skipping "
+              f"(most likely out of memory)", flush=True)
+        return None
+    except Exception as e:                                # noqa: BLE001
+        print(f"ERROR [{job[1]}] {job[0]}: {e}", flush=True)
+        return None
+
+
 def extract_collection(coll: Collection, out_dir: str | Path,
                        sr: int = 22050, duration: float | None = None,
-                       workers: int = 4, force: bool = False) -> Path:
-    """Extract every track (parallel, cached) → ``<out_dir>/features.json``."""
+                       workers: int = 4, force: bool = False,
+                       retry_cap_s: float | None = 600.0) -> Path:
+    """Extract every track (parallel, cached) → ``<out_dir>/features.json``.
+
+    Tracks whose worker dies without raising --- an out-of-memory kill on a
+    very long track is the case seen in practice --- are retried one at a
+    time in their own process, with the analysis window capped to
+    ``retry_cap_s`` seconds so the retry fits in memory. A capped result
+    records ``analysis_capped_s`` so the shortened window is visible in the
+    output rather than implied by a duration. Pass ``retry_cap_s=None`` to
+    retry at full length, which will usually be killed again.
+
+    Nothing is capped on the first attempt, so ordinary collections are
+    extracted exactly as before.
+    """
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     out = out_dir / "features.json"
     if out.exists() and not force:
         return out
     jobs = [(str(t.path), t.album, sr, duration) for t in coll.tracks]
+
     if workers > 1:
-        from concurrent.futures import ProcessPoolExecutor
-        with ProcessPoolExecutor(max_workers=workers) as ex:
-            res = [r for r in ex.map(_work, jobs) if r]
+        results = _run_pool(list(enumerate(jobs)), workers)
     else:
-        res = [r for r in map(_work, jobs) if r]
+        results = {i: r for i, j in enumerate(jobs) if (r := _work(j))}
+
+    missing = [(i, j) for i, j in enumerate(jobs) if i not in results]
+    if missing and workers > 1:
+        print(f"{len(missing)} track(s) did not complete; retrying "
+              f"individually" + (f", capped to {retry_cap_s:.0f}s"
+                                 if retry_cap_s else ""), flush=True)
+        for i, j in missing:
+            cap = retry_cap_s
+            if cap is not None and j[3] is not None:
+                cap = min(j[3], cap)
+            job = (j[0], j[1], j[2], cap, cap is not None)
+            if r := _run_isolated(job):
+                results[i] = r
+
+    res = [results[i] for i in sorted(results)]
     out.write_text(json.dumps(res, indent=1))
     return out
 
