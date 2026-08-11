@@ -10,6 +10,35 @@ not compete with embedding models on raw similarity.
 
 ``extract_collection`` caches to ``features.json`` in the output folder and
 runs tracks in parallel; delete the file to force re-extraction.
+
+**Two descriptors answer even when there is nothing to answer, and both must
+be gated before use.** This matters whenever the input is not a music
+collection --- field recordings, broadcast audio, anything where "music" was
+decided by a detector rather than by a track listing.
+
+``tempo_bpm`` is librosa's prior-based estimator and it has no failure value:
+given an onset envelope with no periodicity it returns the tempogram bin
+nearest its 120 BPM prior. White noise returns 123.05 BPM, reproducibly. On
+704 five-minute spans of domestic television audio it returned five distinct
+values in all, 93 % of them exactly 123.0, and the other four were the
+adjacent grid points --- a result indistinguishable from noise. **Read
+``pulse_R`` first**: below about 0.1 there is no pulse for a tempo to
+describe, and ``tempo_bpm`` is reporting the prior rather than the track.
+
+``key`` and ``key_conf`` degrade the same way. The Krumhansl--Schmuckler
+correlation is taken against whatever chroma vector arrives, including a
+near-uniform one. On the same material ``chroma_entropy`` sat at a median
+3.541 against a maximum of log2(12) = 3.585, with 80 % of spans within 2 % of
+that ceiling: no tonal centre exists, so the estimate falls to whichever tiny
+bias survives, and it does so *consistently* --- 78 % of spans came back minor
+and one key took a quarter of them. Consistency is not confidence here.
+**Read ``chroma_entropy`` first**; near the ceiling the key is an artefact,
+and splitting by ``key_conf`` will not reveal it, because the artefact is
+confident.
+
+The spectral and temporal descriptors are unaffected and stay usable on such
+material: onset rate, centroid, flatness, zero-crossing rate, percussive ratio
+and dynamic range all varied normally on the same spans.
 """
 from __future__ import annotations
 

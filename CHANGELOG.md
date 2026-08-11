@@ -6,6 +6,22 @@ that date are summaries of what the commits say rather than notes written at the
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/); the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html) loosely while pre-1.0.
 
+## [Unreleased]
+
+### Changed
+- **`features` documents two descriptors that answer when there is nothing to answer.** Neither is a
+  bug and both mislead on any input that is not a music collection --- field recordings, broadcast
+  audio, anything where "music" was decided by a detector rather than by a track listing.
+  `tempo_bpm` is librosa's prior-based estimator and has no failure value: with no periodicity in the
+  onset envelope it returns the tempogram bin nearest its 120 BPM prior, and white noise reproducibly
+  gives 123.05 BPM. Measured on 704 five-minute spans of domestic television audio it returned five
+  distinct values in all, 93 % of them exactly 123.0 and the rest adjacent grid points --- a result
+  indistinguishable from noise. `pulse_R` is the gate: below about 0.1 there is no pulse for a tempo
+  to describe. `key` and `key_conf` fail the same way through a near-uniform chroma, where the
+  Krumhansl–Schmuckler correlation falls to whatever tiny bias survives and does so *consistently*,
+  so a confidence split does not reveal it; `chroma_entropy` near its log2(12) ceiling is the gate.
+  The spectral and temporal descriptors were unaffected on the same material and stay usable.
+
 ## [0.4.0] — 2026-08-08
 
 ### Fixed
