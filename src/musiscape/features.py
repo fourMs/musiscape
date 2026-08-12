@@ -4,7 +4,7 @@ Every number here has a musicological reading: note density (plucked events
 per second), brightness (spectral centroid), inharmonic texture (spectral
 flatness), dynamic range, harmonic/percussive balance, estimated key
 (Krumhansl–Schmuckler), pitch-class entropy, pulse clarity and tonal focus
-(circular statistics via :mod:`ambiscape.music`), and a Schaeffer TARTYP
+(circular statistics via :mod:`micromotion.circular`), and a Schaeffer TARTYP
 object profile. The set is deliberately small enough to explain; it does
 not compete with embedding models on raw similarity.
 
@@ -79,7 +79,7 @@ def estimate_key(chroma_mean: np.ndarray) -> tuple[str, float]:
 def extract_track(y: np.ndarray, sr: int) -> dict:
     """All per-track descriptors from decoded audio."""
     import librosa
-    from ambiscape import music as amusic
+    from . import music as amusic
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")

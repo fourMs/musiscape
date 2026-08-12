@@ -94,7 +94,7 @@ def similarity(feats: list[dict]) -> dict:
 
 def tonal_spread(feats: list[dict]) -> dict:
     """Per-album concentration of tonal centres on the circle of fifths."""
-    from ambiscape.music import tonal_center_spread
+    from .music import tonal_center_spread
     out = {}
     for a in albums_of(feats):
         chromas = [f["chroma"] for f in feats if f["album"] == a]

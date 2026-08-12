@@ -43,7 +43,7 @@ Each track becomes one card, in a choice of representations:
   timeline: three mass lanes (N tonic / Y variable / X complex), facture
   as mark style (impulse ticks, hatched iterations, solid held blocks),
   with a TARTYP-grid fingerprint inset. Uses the same signal proxies and
-  thresholds as ``ambiscape.music.tartyp_profile``.
+  thresholds as ``musiscape.music.tartyp_profile``.
 
 The ``rhythm`` card carries a beat-wheel inset: onset phases on the
 dominant-period circle with the pulse-clarity resultant arrow.
@@ -192,7 +192,7 @@ def _tarsom_criteria(y, sr, hop=512):
     """Signal proxies for Schaeffer's seven morphological criteria."""
     import librosa
     from scipy.ndimage import median_filter
-    from ambiscape.music import ONSET_FLOOR
+    from .music import ONSET_FLOOR
     S = np.abs(librosa.stft(y, n_fft=2048, hop_length=hop))
     flat = librosa.feature.spectral_flatness(S=S)[0]
     cent = librosa.feature.spectral_centroid(S=S, sr=sr)[0]
@@ -245,11 +245,11 @@ TARSOM_ROWS = [
 def _schaeffer_objects(y, sr, hop=512):
     """Onset-bounded sound objects with (t0, t1, mass, facture).
 
-    The object-level detail behind ``ambiscape.music.tartyp_profile`` —
+    The object-level detail behind ``musiscape.music.tartyp_profile`` —
     same segmentation, same corpus-calibrated thresholds (imported from
     ambiscape), but keeping every object rather than the aggregate."""
     import librosa
-    from ambiscape.music import (ONSET_FLOOR, TARTYP_COMPLEX, TARTYP_DRIFT,
+    from .music import (ONSET_FLOOR, TARTYP_COMPLEX, TARTYP_DRIFT,
                                  TARTYP_IMPULSE_S, TARTYP_ITER, TARTYP_TONIC)
     S = np.abs(librosa.stft(y, n_fft=2048, hop_length=hop))
     flat = librosa.feature.spectral_flatness(S=S)[0]
@@ -593,7 +593,7 @@ def _draw_main(ax, y, sr, style, color="#2a78d6", y2=None):
         ax.set_ylim(-1.05, 1.05)
 
     elif style == "rhythm":
-        from ambiscape.music import ONSET_FLOOR
+        from .music import ONSET_FLOOR
         env = librosa.onset.onset_strength(y=y, sr=sr)
         fr = librosa.onset.onset_detect(onset_envelope=env, sr=sr,
                                         units="frames")
@@ -610,7 +610,7 @@ def _draw_main(ax, y, sr, style, color="#2a78d6", y2=None):
             # beat-wheel inset: onset phases + pulse-clarity arrow
             try:
                 from ambiscape.circstats import mean_resultant
-                from ambiscape.music import dominant_period
+                from .music import dominant_period
                 w = env[fr]
                 p0 = dominant_period(env, sr)
                 best = (p0, -1.0, 0.0)
