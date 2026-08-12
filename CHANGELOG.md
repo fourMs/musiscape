@@ -23,6 +23,28 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/); the
 > decision. Nothing here is broken for anyone working from the checkouts.
 
 
+## 0.5.0 — 2026-08-12
+
+### Added
+- **`musiscape.music`: the analysis this package was already built on.** Seven functions move here
+  from `ambiscape.music` — `tempogram`, `chromagram`, `dominant_period`, `pulse_clarity`,
+  `fifths_center`, `tonal_center_spread`, `tartyp_profile` — where they had lived in the soundscape
+  toolbox while this one imported six of their symbols across `features.py`, `corpus.py` and
+  `thumbnails.py`. Nothing was duplicated, so this was a relocation rather than a merge.
+
+### Changed
+- **musiscape no longer depends on ambiscape.** The dependency is now `micromotion>=1.8.0`, which
+  owns circular statistics across the four toolboxes and gained `circular_sd` and `rayleigh_from_R`
+  for this move. That also removes a packaging hazard: installing musiscape used to resolve
+  ambiscape from PyPI, which could silently replace an editable checkout with a wheel of the same
+  version number.
+
+  The two session-aware functions did not travel. `load_w` and `run_session` know what an ambiscape
+  `Session` is, and stayed there as a bridge — in the same sense as `musicalgestures._soundscape` is
+  one the other way. MGT owns pixels, ambiscape owns samples, micromotion owns bodies, musiscape
+  owns music, and each crossing is one small module that says so.
+
+
 ## [Unreleased]
 
 ### Changed
