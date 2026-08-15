@@ -5,6 +5,7 @@
 [![PyPI version](https://img.shields.io/pypi/v/musiscape)](https://pypi.org/project/musiscape/)
 [![Python](https://img.shields.io/pypi/pyversions/musiscape.svg)](https://pypi.org/project/musiscape/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21948999.svg)](https://doi.org/10.5281/zenodo.21948999)
 
 Musiscape is a Python toolbox that analyses a folder tree of music as a
 collection: albums, similarity, outliers, categories. Point it at a folder
@@ -81,3 +82,14 @@ MIT licence. Musiscape is developed as part of the
 [AMBIENT](https://www.uio.no/ritmo/english/projects/ambient/) project at
 [RITMO Centre for Interdisciplinary Studies in Rhythm, Time and
 Motion](https://www.uio.no/ritmo/english/), University of Oslo.
+
+## Citing
+
+Cite the CONCEPT DOI, which always resolves to the newest version:
+
+> Jensenius, A. R. (2026). *musiscape: analysis of music collections* (Version 0.5.0) [Computer software]. Zenodo.
+> https://doi.org/10.5281/zenodo.21948999
+
+Where the exact behaviour matters, cite the version you ran instead. Version 0.5.0 is https://doi.org/10.5281/zenodo.21949000.
+
+`CITATION.cff` in this repository carries the same information in machine-readable form.
