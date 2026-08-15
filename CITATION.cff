@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+title: "musiscape: analysis of music collections"
+message: "If you use this software, please cite it."
+type: software
+authors:
+  - family-names: Jensenius
+    given-names: "Alexander Refsum"
+    affiliation: "RITMO Centre for Interdisciplinary Studies in Rhythm, Time and Motion, University of Oslo"
+    orcid: "https://orcid.org/0000-0001-6171-8743"
+repository-code: "https://github.com/fourMs/musiscape"
+abstract: >-
+  A toolbox for analysing music collections: corpus fingerprints, similarity landscapes, and honest categorisation from folders of audio.
+keywords:
+  - music information retrieval
+  - corpus analysis
+  - audio features
+license: MIT
+version: 0.5.0
+date-released: "2026-08-12"
