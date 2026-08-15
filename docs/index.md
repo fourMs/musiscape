@@ -41,3 +41,13 @@ Key estimates are Krumhansl–Schmuckler correlations (indicative for drones);
 pulse clarity conflates slow tempo drift with rubato; Schaeffer classes are
 corpus-calibrated proxies for aural categories. Treat every category and
 card as a draft for listening, not a verdict.
+
+
+## Citing
+
+Jensenius, A. R. (2026). *musiscape: analysis of music collections* (Version 0.5.0) [Computer software]. Zenodo.
+<https://doi.org/10.5281/zenodo.21948999>
+
+That is the CONCEPT DOI and it always resolves to the newest version. Where the exact behaviour
+matters, name the version you ran as well: version 0.5.0 is
+<https://doi.org/10.5281/zenodo.21949000>.
