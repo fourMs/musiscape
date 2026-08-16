@@ -15,6 +15,15 @@ from pathlib import Path
 
 AUDIO_EXTS = {".mp3", ".wav", ".flac", ".ogg", ".m4a", ".aiff", ".aif"}
 
+#: Video containers, accepted only where a *recording* is asked for (the
+#: concert tools). Collections stay audio-only: a folder of films is not an
+#: album, and letting ``open_collection`` pick them up would change what
+#: every existing verb sees.
+VIDEO_EXTS = {".mp4", ".mov", ".mkv", ".m4v", ".avi", ".mts", ".m2ts"}
+
+#: Anything the concert tools will decode.
+RECORDING_EXTS = AUDIO_EXTS | VIDEO_EXTS
+
 
 @dataclass
 class Track:
@@ -68,11 +77,62 @@ def open_collection(root: str | Path) -> Collection:
     return Collection(root=root, albums=albums)
 
 
+def list_recordings(root: str | Path) -> list[Path]:
+    """Recordings under ``root``, in name order---which is playing order.
+
+    Cameras number their files sequentially, so sorting by name puts a
+    split concert back in the order it was played. A folder whose files
+    are named otherwise needs the order fixed by renaming.
+    """
+    root = Path(root).expanduser().resolve()
+    if not root.is_dir():
+        raise FileNotFoundError(f"not a directory: {root}")
+    found = sorted(p for p in root.rglob("*")
+                   if p.is_file() and p.suffix.lower() in RECORDING_EXTS)
+    if not found:
+        raise FileNotFoundError(f"no recordings under {root}")
+    return found
+
+
 def load(track: Track, sr: int = 22050, duration: float | None = None):
     """Load a track as mono float audio at ``sr`` (librosa's decoders)."""
     import librosa
     y, sr = librosa.load(str(track.path), sr=sr, mono=True, duration=duration)
     return y, sr
+
+
+def load_recording(path: str | Path, sr: int = 22050, offset: float = 0.0,
+                   duration: float | None = None):
+    """Load any recording---audio file or video container---as mono float.
+
+    Audio goes through librosa as everywhere else. Video is decoded by
+    ffmpeg, which is not a package dependency: it is asked for only when a
+    video file is actually handed over, and its absence is reported as a
+    missing program rather than a decode failure.
+    """
+    path = Path(path)
+    if path.suffix.lower() not in VIDEO_EXTS:
+        import librosa
+        return librosa.load(str(path), sr=sr, mono=True, offset=offset,
+                            duration=duration)
+
+    import shutil
+    import subprocess
+
+    import numpy as np
+
+    if shutil.which("ffmpeg") is None:
+        raise RuntimeError(
+            f"reading {path.suffix} needs ffmpeg on PATH (install ffmpeg)")
+    cmd = ["ffmpeg", "-v", "error", "-ss", f"{offset:.6f}", "-i", str(path)]
+    if duration is not None:
+        cmd += ["-t", f"{duration:.6f}"]
+    cmd += ["-vn", "-ac", "1", "-ar", str(sr), "-f", "f32le", "-"]
+    proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if proc.returncode != 0:
+        raise RuntimeError(f"ffmpeg failed on {path.name}: "
+                           f"{proc.stderr.decode(errors='replace').strip()}")
+    return np.frombuffer(proc.stdout, dtype=np.float32).copy(), sr
 
 
 def load_stereo(track: Track, sr: int = 22050,
