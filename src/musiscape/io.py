@@ -10,6 +10,7 @@ metadata enrichment.
 """
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -77,6 +78,53 @@ def open_collection(root: str | Path) -> Collection:
     return Collection(root=root, albums=albums)
 
 
+#: Leading ``YYYYMMDD_HHMMSS`` or ``YYMMDD_HHMMSS`` in a filename, the
+#: convention recorders use and the one ambiscape reads.
+_STAMP = re.compile(r"(?<!\d)(\d{4}|\d{2})(\d{2})(\d{2})[_-](\d{2})(\d{2})(\d{2})")
+
+
+def recording_start_time(path: str | Path):
+    """When a recording started, as a naive local ``datetime``, or ``None``.
+
+    Read from the container's ``creation_time`` where there is one, else
+    from a timestamp in the filename. Video containers store that tag in
+    UTC, so it is converted to the local zone: what makes a session clock
+    readable is the wall time of the room, not of Greenwich.
+
+    Returns ``None`` rather than guessing when neither is present.
+    """
+    import datetime as _dt
+
+    path = Path(path)
+    m = _STAMP.search(path.name)
+    if m:
+        y, mo, d, hh, mi, ss = (int(g) for g in m.groups())
+        y = y + 2000 if y < 100 else y
+        try:
+            return _dt.datetime(y, mo, d, hh, mi, ss)
+        except ValueError:
+            pass
+
+    import shutil
+    import subprocess
+    if shutil.which("ffprobe") is None:
+        return None
+    proc = subprocess.run(
+        ["ffprobe", "-v", "error", "-show_entries", "format_tags=creation_time",
+         "-of", "default=nw=1:nk=1", str(path)],
+        stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+    tag = proc.stdout.decode(errors="replace").strip()
+    if not tag:
+        return None
+    try:
+        when = _dt.datetime.fromisoformat(tag.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if when.tzinfo is not None:
+        when = when.astimezone().replace(tzinfo=None)
+    return when
+
+
 def album_stem(album: str) -> str:
     """Filename stem for a per-album output file.
 
@@ -89,18 +137,24 @@ def album_stem(album: str) -> str:
     return stem or "collection"
 
 
-def list_recordings(root: str | Path) -> list[Path]:
+def list_recordings(root: str | Path, exclude=()) -> list[Path]:
     """Recordings under ``root``, in name order, which is playing order.
 
     Cameras number their files sequentially, so sorting by name puts a
     split concert back in the order it was played. A folder whose files
     are named otherwise needs the order fixed by renaming.
+
+    ``exclude`` names folders to skip. The concert tools write audio into
+    an output folder that normally sits inside the input folder, so without
+    this a second run would read the first run's songs back as recordings.
     """
     root = Path(root).expanduser().resolve()
     if not root.is_dir():
         raise FileNotFoundError(f"not a directory: {root}")
+    skip = [Path(d).expanduser().resolve() for d in exclude]
     found = sorted(p for p in root.rglob("*")
-                   if p.is_file() and p.suffix.lower() in RECORDING_EXTS)
+                   if p.is_file() and p.suffix.lower() in RECORDING_EXTS
+                   and not any(p.is_relative_to(d) for d in skip))
     if not found:
         raise FileNotFoundError(f"no recordings under {root}")
     return found

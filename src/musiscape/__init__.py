@@ -13,4 +13,4 @@ The circular statistics it builds on come from
 """
 from .io import open_collection  # noqa: F401
 
-__version__ = "0.6.2"
+__version__ = "0.7.0"

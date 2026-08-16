@@ -22,6 +22,30 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/); the
 > and musiscape is free to ship. ambiscape still goes last.
 
 
+## 0.7.0 — 2026-08-16
+
+### Added
+- **A labelled timeline of a whole recording.** `segment` now classifies every second as `music`,
+  `applause`, `voices`, `quiet` or `other`, writes `regions.json`, and draws `timeline.png`: one
+  ribbon for a whole evening, with a level curve under it. Music is taken from the setlist so the
+  ribbon and the song listing cannot disagree; the rest is decided from level, spectral flatness and
+  how much that flatness moves. A syllable-rate modulation measure was tried for speech first and
+  separates nothing on this material, where what does separate speech from a clapping room is that
+  speech swings between voiced and unvoiced while a room is stationary.
+- **Non-music spans exported for a soundscape toolbox.** `segment` writes everything that is not a
+  song into `other/`, which `ambiscape analyze` reads as one session. The files are FLAC and each
+  name leads with a `YYYYMMDD_HHMMSS` stamp from the recording's own start time, which is what lets
+  the other toolbox put the evening on a real clock. The two packages meet at the file boundary and
+  neither imports the other.
+- `io.recording_start_time`, reading a container's `creation_time` or a filename stamp.
+
+### Fixed
+- **`segment` no longer reads its own output.** The default output folder sits inside the input
+  folder and what it writes there is audio, so a recursive scan fed the second run the first run's
+  songs: a three-file concert came back as eleven recordings and fifteen songs. `list_recordings`
+  takes an `exclude` argument and the command passes its output folder.
+
+
 ## 0.6.2 — 2026-08-16
 
 ### Added

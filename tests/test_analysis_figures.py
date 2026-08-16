@@ -143,3 +143,44 @@ def test_tempogram_can_mark_the_tempo_the_report_cites():
     marks = [t.get_text() for t in ax.texts]
     assert any("97" in m for m in marks), marks
     plt.close(fig)
+
+
+# --------------------------------------------------------------------------
+# the concert timeline
+
+SPANS = [
+    {"label": "quiet", "start_s": 0.0, "end_s": 120.0, "duration_s": 120.0},
+    {"label": "music", "start_s": 120.0, "end_s": 360.0, "duration_s": 240.0},
+    {"label": "applause", "start_s": 360.0, "end_s": 400.0, "duration_s": 40.0},
+    {"label": "voices", "start_s": 400.0, "end_s": 460.0, "duration_s": 60.0},
+    {"label": "music", "start_s": 460.0, "end_s": 700.0, "duration_s": 240.0},
+]
+
+
+def test_concert_timeline_exports_at_the_requested_width(tmp_path):
+    out = tmp_path / "timeline.png"
+
+    figures.concert_timeline(SPANS, 700.0, out, width_px=1920)
+
+    assert Image.open(out).size[0] == 1920
+
+
+def test_concert_timeline_legend_names_only_the_classes_present():
+    """A legend entry for a class that never occurs invites the reader to
+    look for something that is not there."""
+    fig, ax = plt.subplots()
+    figures.draw_concert_timeline(ax, SPANS, 700.0)
+
+    names = {t.get_text() for t in ax.get_legend().get_texts()}
+    assert names == {"music", "applause", "voices", "quiet"}
+    plt.close(fig)
+
+
+def test_concert_timeline_time_axis_is_minutes_and_seconds():
+    fig, ax = plt.subplots()
+    figures.draw_concert_timeline(ax, SPANS, 700.0)
+    fig.canvas.draw()
+
+    ticks = [t.get_text() for t in ax.get_xticklabels() if t.get_text()]
+    assert any(":" in t for t in ticks), ticks
+    plt.close(fig)

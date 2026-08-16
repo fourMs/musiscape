@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-title: "musiscape: analysis of music collections"
+title: "musiscape: A Python toolbox for analysing large music collections and long music recordings"
 message: "If you use this software, please cite it."
 type: software
 authors:
@@ -16,5 +16,4 @@ keywords:
   - corpus analysis
   - audio features
 license: MIT
-version: 0.5.0
-date-released: "2026-08-12"
+doi: "10.5281/zenodo.21948999"

@@ -24,7 +24,7 @@ exist.
 | `thumbnails` | one visual thumbnail per track | an image per track |
 | `poster` | a single sheet of the whole collection | one image |
 | `sonic` | a sonic thumbnail per track: about twelve seconds of audio summarising it | an audio file per track |
-| `segment` | finds the songs in a continuous concert recording, video included | `songs.json` and one audio file per song under `songs/` |
+| `segment` | finds the songs in a continuous concert recording, video included, labels every second of it, and exports the non-music spans for a soundscape toolbox | `songs.json`, `regions.json`, `timeline.png`, one audio file per song under `songs/`, and the rest under `other/` |
 | `figures` | labelled chromagram and tempogram per track --- the readable counterpart to the thumbnail cards | two PNGs per track under `figures/` |
 | `pdf` | summary table of every track's estimates, then a page of figures per track | `report.pdf` |
 
@@ -47,7 +47,7 @@ collection, which every other verb then accepts. See [Concerts & long recordings
 | `--style NAME` | `thumbnails`, `poster` | which thumbnail to draw, default `mel` |
 | `--min-song N` | `segment` | shortest span counted as a song, default 60 s |
 | `--min-gap N` | `segment` | shortest break that ends a song, default 8 s |
-| `--width N` | `figures` | export width in pixels, default 1920 |
+| `--width N` | `figures`, `segment` | export width in pixels, default 1920 |
 
 `--style` accepts `mel`, `chroma`, `tempo`, `combo`, `barcode`, `ssm`, `trajectory`, `keyscape`,
 `rhythm`, `wave`, `vinyl`, `spiral`, `tonnetz`, `arcs`, `schaeffer`, `tarsom` and `stereo`.

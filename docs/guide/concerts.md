@@ -96,6 +96,59 @@ you check a boundary by ear. Check them. The segmenter reports where the music w
 called, so matching songs to a setlist is yours to do, and it is the moment a wrong boundary becomes
 obvious.
 
+## The timeline
+
+`segment` also labels every second of the recording and draws it as a ribbon, so a whole evening
+fits on one strip:
+
+```
+analysis/
+  regions.json            every span, labelled
+  timeline.png            the ribbon, at --width pixels
+```
+
+Five labels are used. `music` comes from the setlist, so the ribbon and the song listing always
+agree: `find_songs` bridges a quiet bar mid-song and a frame classifier does not, and without this
+one song is drawn as three. The rest is decided frame by frame:
+
+| label | what it is | how it is told apart |
+|---|---|---|
+| `music` | a piece being played | taken from the setlist |
+| `applause` | the room clapping | the flattest and brightest thing in the hall |
+| `voices` | someone talking | flatness that swings, as speech alternates voiced and unvoiced |
+| `quiet` | room tone | below the level floor |
+| `other` | audible, but nothing above fits | the classifier declining to guess |
+
+`other` is worth reading as a real answer rather than a leftover. It marks the places where the
+material is genuinely ambiguous, which on a concert recording is usually a song ending, or a stage
+being reset.
+
+These thresholds were calibrated on one 53-minute concert recorded to a camera's built-in
+microphone; the measurements behind them are in the source, and they are module constants so they
+can be moved.
+
+## Handing the rest to a soundscape toolbox
+
+What happens between the songs is a soundscape question rather than a music one, and
+[ambiscape](https://github.com/fourMs/ambiscape) is the toolbox for those. The two meet at the file
+boundary rather than by importing one another, so `segment` writes every non-music span into a
+folder that `ambiscape analyze` reads as one session:
+
+```
+musiscape segment  ~/video/concert -o ~/video/concert/analysis
+ambiscape analyze  ~/video/concert/analysis/other
+```
+
+Two things make that handover work. The files are FLAC, which is lossless, about half the size of
+WAV, and read natively on both sides. And each name leads with a `YYYYMMDD_HHMMSS` stamp taken from
+the recording's own start time, which is the convention recorders use and the one ambiscape reads;
+without it every span lands at the same second and the session has no clock.
+
+The start time comes from the container's `creation_time` where there is one, else from a stamp in
+the source filename. Video containers store that tag in UTC and it is converted to local time, since
+what makes a session clock readable is the wall time of the room. Where neither exists the names
+fall back to concert timecodes, which at least keep the folder in playing order.
+
 ## Video files
 
 `segment` accepts video containers (`.mp4`, `.mov`, `.mkv`, `.m4v`, `.avi`, `.mts`, `.m2ts`),

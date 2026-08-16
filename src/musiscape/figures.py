@@ -237,3 +237,73 @@ def chromagram_plot(y, sr, out_path, width_px: int = 1920,
         ax.set_title(title, color=INK, fontsize=11, loc="left")
     fig.tight_layout()
     return _export(fig, out_path, width_px, height_px)
+
+
+# --------------------------------------------------------------------------
+# The concert timeline: what the recording was doing, end to end.
+
+#: Colour per region class. Music takes the first categorical hue so it
+#: reads as the subject; the two things the room does take the next two;
+#: room tone and unclassified frames stay grey so they recede.
+REGION_COLORS = {
+    "music": PALETTE[0],
+    "applause": PALETTE[1],
+    "voices": PALETTE[2],
+    "quiet": "#dcdbd4",
+    "other": "#a8a69f",
+}
+
+
+def draw_concert_timeline(ax, spans, total_s: float, level=None):
+    """Labelled ribbon of a concert's regions onto ``ax``.
+
+    ``spans`` is what :func:`musiscape.concert.regions` returns. ``level``,
+    if given, is a per-second dB array drawn underneath, which is what shows
+    an applause swell dying away where the ribbon only shows a block.
+
+    The legend names only the classes that occur, since an entry for a class
+    that never happens invites the reader to hunt for it.
+    """
+    seen = []
+    for s in spans:
+        lab = s["label"]
+        ax.axvspan(s["start_s"], s["end_s"], 0.42, 1.0,
+                   color=REGION_COLORS.get(lab, REGION_COLORS["other"]),
+                   linewidth=0)
+        if lab not in seen:
+            seen.append(lab)
+
+    if level is not None and len(level):
+        t = np.linspace(0, total_s, len(level))
+        lo, hi = np.percentile(level, 2), np.percentile(level, 98)
+        norm = np.clip((level - lo) / max(hi - lo, 1e-9), 0, 1)
+        ax.fill_between(t, 0.02, 0.02 + 0.34 * norm, color=MUT, alpha=0.55,
+                        linewidth=0)
+
+    from matplotlib.patches import Patch
+    order = [c for c in REGION_COLORS if c in seen]
+    ax.legend(handles=[Patch(facecolor=REGION_COLORS[c], label=c)
+                       for c in order],
+              loc="upper left", bbox_to_anchor=(0, -0.18), ncol=len(order),
+              frameon=False, fontsize=9)
+
+    ax.set_xlim(0, total_s)
+    ax.set_ylim(0, 1)
+    ax.set_yticks([])
+    _time_axis(ax, "concert time (m:ss)")
+    for side in ("top", "right", "left"):
+        ax.spines[side].set_visible(False)
+    ax.spines["bottom"].set_color(GRID)
+    ax.tick_params(colors=MUT, labelsize=9)
+    return ax
+
+
+def concert_timeline(spans, total_s: float, out_path, width_px: int = 1920,
+                     height_px: int = 340, title: str = "", level=None):
+    """Concert timeline → ``out_path``, exactly ``width_px`` wide."""
+    fig, ax = plt.subplots()
+    draw_concert_timeline(ax, spans, total_s, level=level)
+    if title:
+        ax.set_title(title, color=INK, fontsize=12, loc="left")
+    fig.tight_layout()
+    return _export(fig, out_path, width_px, height_px)

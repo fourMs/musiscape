@@ -46,14 +46,29 @@ def main(argv=None):
     # it. Its output folder is where a collection then comes from.
     if args.verb == "segment":
         from . import concert
-        from .io import list_recordings
+        from .io import list_recordings, recording_start_time
         root = Path(args.folder).expanduser().resolve()
-        paths = list_recordings(root)
-        out = Path(args.out) if args.out else root / "analysis"
+        out = (Path(args.out) if args.out else root / "analysis")
+        out = out.expanduser().resolve()
+        paths = list_recordings(root, exclude=[out])
         manifest = concert.split_recording(paths, out,
                                            min_song_s=args.min_song,
                                            min_gap_s=args.min_gap)
         songs = json.loads(manifest.read_text())
+
+        # what the recording was doing all evening, songs included
+        from . import figures as afig
+        rmap = concert.map_regions(paths, songs=songs)
+        (out / "regions.json").write_text(json.dumps(rmap["spans"], indent=1))
+        afig.concert_timeline(rmap["spans"], rmap["total_s"],
+                              out / "timeline.png", width_px=args.width,
+                              title=root.name, level=rmap["level_db"])
+        concert.export_regions(paths, out / "other", rmap["spans"],
+                               start_time=recording_start_time(paths[0]))
+        tally = {}
+        for sp in rmap["spans"]:
+            tally[sp["label"]] = tally.get(sp["label"], 0.0) + sp["duration_s"]
+
         for s in songs:
             t = int(s["start_s"])
             across = (f" across {len(s['parts'])} files"
@@ -62,6 +77,10 @@ def main(argv=None):
                   f"{s['duration_s'] / 60:5.1f} min  {s['file']}{across}")
         print(f"{len(songs)} songs from {len(paths)} recording(s) → "
               f"{manifest.parent / 'songs'}")
+        print("regions: " + ", ".join(
+            f"{k} {v / 60:.1f} min" for k, v in sorted(
+                tally.items(), key=lambda kv: -kv[1])))
+        print(f"{out / 'timeline.png'}")
         return
 
     coll = open_collection(args.folder)

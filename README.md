@@ -47,7 +47,7 @@ categories, and the corpus extremes.
 | `thumbnails` | one visual card per track (`--style`, seventeen styles) |
 | `poster` | the whole collection as one image (`--style vinyl` for discs) |
 | `sonic` | a ~12-second audio summary per track, plus album medleys |
-| `segment` | finds the songs in a concert recording and writes one file per song |
+| `segment` | finds the songs in a concert recording, labels every second of it, and writes one file per song |
 | `figures` | labelled chromagram and tempogram per track, at any pixel width |
 | `pdf` | one PDF: a summary table, then a page of figures per track |
 
@@ -109,11 +109,12 @@ Motion](https://www.uio.no/ritmo/english/), University of Oslo.
 
 ## Citing
 
-Cite the CONCEPT DOI, which always resolves to the newest version:
+Cite the concept DOI, which always resolves to the newest version:
 
-> Jensenius, A. R. (2026). *musiscape: analysis of music collections* (Version 0.5.0) [Computer software]. Zenodo.
-> https://doi.org/10.5281/zenodo.21948999
+> Jensenius, A. R. (2026). *musiscape: A Python toolbox for analysing large music collections and
+> long music recordings* [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.21948999
 
-Where the exact behaviour matters, cite the version you ran instead. Version 0.5.0 is https://doi.org/10.5281/zenodo.21949000.
+Where the exact behaviour matters, add the version you ran. Every release has its own DOI, listed
+on the [Zenodo record](https://doi.org/10.5281/zenodo.21948999).
 
 `CITATION.cff` in this repository carries the same information in machine-readable form.
