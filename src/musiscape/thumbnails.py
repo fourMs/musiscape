@@ -63,8 +63,9 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
+from .features import feats_2hz as _feats_2hz
 from .figures import GRID, INK, MUT, album_colors
-from .io import Collection, Track, load
+from .io import Collection, Track, album_stem as _sheet_stem, load
 
 #: available card styles
 STYLES = ("mel", "chroma", "tempo", "combo", "barcode", "ssm",
@@ -81,21 +82,6 @@ _FIFTHS = 2 * np.pi * (7 * np.arange(12) % 12) / 12
 
 # --------------------------------------------------------------------------
 # shared feature helpers
-
-def _feats_2hz(y, sr):
-    """Chroma, MFCC and RMS aggregated to 2 Hz frames."""
-    import librosa
-    hop = 512
-    C = librosa.feature.chroma_cqt(y=y, sr=sr, hop_length=hop)
-    M = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=13, hop_length=hop)[1:]
-    rms = librosa.feature.rms(y=y, hop_length=hop)[0]
-    step = max(1, int(0.5 * sr / hop))
-    n = max(1, C.shape[1] // step)
-    agg = lambda X: np.stack([X[:, i * step:(i + 1) * step].mean(1)
-                              for i in range(n)], 1)
-    return agg(C), agg(M), np.array([rms[i * step:(i + 1) * step].mean()
-                                     for i in range(n)])
-
 
 def barcode_rgb(C, rms):
     """RGB strip (n×3) from 2 Hz chroma + RMS—the barcode's colours."""
@@ -763,18 +749,6 @@ def contact_sheet(paths: list[Path], out_path: str | Path, cols: int = 3):
         sheet.paste(im, ((i % cols) * w, (i // cols) * h))
     sheet.save(out_path)
     return Path(out_path)
-
-
-def _sheet_stem(album: str) -> str:
-    """Filename stem for an album's contact sheet.
-
-    Audio sitting in the collection root forms the album ``"."``, and
-    ``"." + ".png"`` is ``..png``---a name Path reads as a dotfile with no
-    suffix, which PIL then refuses to save, taking the whole run with it.
-    Leading dots go for that reason rather than for tidiness.
-    """
-    stem = album.replace("/", "_").lstrip(".")
-    return stem or "collection"
 
 
 def render_collection(coll: Collection, out_dir: str | Path,

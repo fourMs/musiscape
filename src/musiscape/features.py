@@ -39,6 +39,23 @@ confident.
 The spectral and temporal descriptors are unaffected and stay usable on such
 material: onset rate, centroid, flatness, zero-crossing rate, percussive ratio
 and dynamic range all varied normally on the same spans.
+
+**Both gates are whole-track averages, which is a second way to be wrong.**
+They catch a descriptor answering about noise. They do not distinguish that
+from a descriptor answering about four minutes of real music at too long a
+timescale, and on live material the second case is the common one: a band
+drifting a few BPM collapses ``pulse_R`` while playing a steady beat, and a
+full band in a reverberant room flattens mean chroma far past a threshold
+calibrated on solo instrumental recordings. On one concert both gates fired
+on seven of eight songs, all eight of which had an audible beat.
+
+:mod:`musiscape.stability` measures the same two quantities per window and
+reports how far the windows agree, which separates the cases. Its results
+travel beside the gated numbers here --- ``key_agreement`` and
+``key_windowed`` beside ``key``, ``tempo_agreement`` and
+``tempo_windowed_bpm`` beside ``tempo_bpm``, and ``beat_salience``, which
+asks whether the tracked beats land on real onsets and so answers "is there
+a pulse" where ``pulse_R`` answers "is there one unchanging pulse".
 """
 from __future__ import annotations
 
@@ -63,6 +80,28 @@ FEATURES = ["onset_rate", "centroid_hz", "flatness", "zcr", "flux",
             "pulse_R"]
 #: log1p-compress these before standardising (right-skewed)
 LOG_FEATURES = {"onset_rate", "centroid_hz", "flatness", "zcr", "duration_s"}
+
+
+def feats_2hz(y, sr):
+    """Chroma, MFCC and RMS aggregated to 2 Hz frames.
+
+    Shared by the visual cards and the sonic thumbnails. It lives here
+    rather than in :mod:`thumbnails` because :mod:`sonic` needs it and has
+    no visual output: importing it from the plotting module made an
+    audio-only verb pay for matplotlib, and pay for it late, inside a
+    process that had already loaded the audio stack.
+    """
+    import librosa
+    hop = 512
+    C = librosa.feature.chroma_cqt(y=y, sr=sr, hop_length=hop)
+    M = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=13, hop_length=hop)[1:]
+    rms = librosa.feature.rms(y=y, hop_length=hop)[0]
+    step = max(1, int(0.5 * sr / hop))
+    n = max(1, C.shape[1] // step)
+    agg = lambda X: np.stack([X[:, i * step:(i + 1) * step].mean(1)
+                              for i in range(n)], 1)
+    return agg(C), agg(M), np.array([rms[i * step:(i + 1) * step].mean()
+                                     for i in range(n)])
 
 
 def estimate_key(chroma_mean: np.ndarray) -> tuple[str, float]:
@@ -99,7 +138,8 @@ def extract_track(y: np.ndarray, sr: int) -> dict:
         yh, yp = librosa.effects.hpss(yt)
         he, pe = float(np.sum(yh ** 2)), float(np.sum(yp ** 2))
 
-        chroma = librosa.feature.chroma_cqt(y=yh, sr=sr).mean(axis=1)
+        chromagram = librosa.feature.chroma_cqt(y=yh, sr=sr)
+        chroma = chromagram.mean(axis=1)
         cm = chroma / (chroma.sum() + 1e-12)
         key, key_conf = estimate_key(chroma)
 
@@ -112,6 +152,12 @@ def extract_track(y: np.ndarray, sr: int) -> dict:
         pulse = amusic.pulse_clarity(yt, sr)
         fifths = amusic.fifths_center(chroma)
         tartyp = amusic.tartyp_profile(yt, sr)
+
+        # The shorter-timescale cross-check for the two gated descriptors.
+        # Both reuse arrays computed above, so this costs almost nothing.
+        from . import stability as astab
+        ks = astab.key_stability(chromagram, sr)
+        ts = astab.tempo_stability(flux, sr)
 
     return {
         "duration_s": round(dur, 1),
@@ -129,6 +175,12 @@ def extract_track(y: np.ndarray, sr: int) -> dict:
         "pulse_R": pulse.get("R", 0.0),
         "pulse_bpm": pulse.get("period_bpm"),
         "tempo_bpm": round(tempo_bpm, 1),
+        "key_windowed": ks["key"],
+        "key_agreement": ks["agreement"],
+        "key_windows": ks["n_windows"],
+        "tempo_windowed_bpm": ts["tempo_bpm"],
+        "tempo_agreement": ts["agreement"],
+        "beat_salience": ts["beat_salience"],
         "fifths_center": fifths["center_note"],
         "fifths_R": fifths["R"],
         "tartyp": tartyp["dist"],
