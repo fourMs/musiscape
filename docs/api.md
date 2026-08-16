@@ -12,6 +12,10 @@
 
 ::: musiscape.features
 
+## Estimate stability
+
+::: musiscape.stability
+
 ## Corpus statistics
 
 ::: musiscape.corpus
@@ -35,6 +39,10 @@
 ## Report
 
 ::: musiscape.report
+
+## PDF report
+
+::: musiscape.pdfreport
 
 ## Command line
 

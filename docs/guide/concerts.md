@@ -108,11 +108,34 @@ rather than obedience.
 
 `pulse_R` folds a whole song at *one* global period. A live band drifts, so a four-minute concert
 take can read below the 0.1 threshold while having a perfectly steady beat — the drift, not the
-absence of pulse, is what lowers the resultant. Cross-check with a beat tracker: if the inter-beat
-intervals are regular, the pulse is real and `tempo_bpm` means something.
+absence of pulse, is what lowers the resultant.
 
 `chroma_entropy` is computed on a whole-song mean chroma. A full band in a reverberant room flattens
 that average far more than the solo instrumental material the threshold was calibrated on, so a
-concert can sit near the ceiling song after song. Cross-check with the **keyscape** card, which
-shows the key estimate at every timescale at once: a genuine tonal centre paints one colour across
-the whole triangle, while an artefact paints a patchwork.
+concert can sit near the ceiling song after song.
+
+[`musiscape.stability`](../api.md) measures both quantities per 20-second window instead, and
+`tempo_agreement` / `key_agreement` travel beside the gated numbers in `features.json`. On the
+reference concert seven of eight windowed key estimates agreed with the whole-song one that the gate
+had called unreliable. The **keyscape** card says the same thing visually: a genuine tonal centre
+paints one colour across the whole triangle, an artefact paints a patchwork.
+
+### There is no pulse gate, and that is a finding
+
+Nothing here reports whether a track *has* a beat, because two candidates were measured against this
+concert and both failed:
+
+| measure | songs | applause & room tone |
+|---|---|---|
+| beat salience (onset strength at tracked beats / track mean) | 1.58 – 1.93 | 1.50 – 1.67 |
+| tempogram peak prominence | 1.09 – 1.62 | 1.07 – 1.24 |
+
+Both look decisive on synthetic material — a click train scores above 13 on the first, white noise
+about 1.2 — and both overlap on the real thing. The reason is not a defective measure. **Applause is
+rhythmic**: a room clapping in near-unison has a periodic onset envelope, and no statistic of
+periodicity alone will separate it from a band. That is exactly why `segment` sorts music from
+applause by spectral flatness instead.
+
+So for a single track, read the tempogram. `musiscape figures --width 1920` draws it with a labelled
+BPM axis: a bright band holding level across the width is a steady tempo, and one that bends is a
+band speeding up.

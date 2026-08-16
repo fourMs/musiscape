@@ -44,6 +44,8 @@ categories, and the corpus extremes.
 | `poster` | the whole collection as one image (`--style vinyl` for discs) |
 | `sonic` | a ~12-second audio summary per track, plus album medleys |
 | `segment` | finds the songs in a concert recording and writes one file per song |
+| `figures` | labelled chromagram and tempogram per track, at any pixel width |
+| `pdf` | one PDF: a summary table, then a page of figures per track |
 
 A live recording is not a collection until it is cut into songs, which is what `segment` is for
 (video files included — concerts usually arrive as video):
