@@ -4,6 +4,10 @@
 
 ::: musiscape.io
 
+## Concerts & long recordings
+
+::: musiscape.concert
+
 ## Feature extraction
 
 ::: musiscape.features

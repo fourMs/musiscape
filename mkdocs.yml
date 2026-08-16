@@ -32,6 +32,7 @@ nav:
   - Guide:
       - Collections & tracks: guide/collections.md
       - Features, corpus statistics & categories: guide/analysis.md
+      - Concerts & long recordings: guide/concerts.md
       - Visual thumbnails & posters: guide/thumbnails.md
       - Schaeffer cards (TARTYP & TARSOM): guide/schaeffer.md
   - API reference: api.md

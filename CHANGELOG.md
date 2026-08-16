@@ -23,6 +23,34 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/); the
 > decision. Nothing here is broken for anyone working from the checkouts.
 
 
+## Unreleased
+
+### Added
+- **`musiscape.concert`: the songs inside a continuous recording.** The toolbox assumed one file is
+  one track, so a live set averaged a whole evening into a single key and a single tempo. `segment`
+  finds the songs first and writes one audio file per song plus a `songs.json` manifest; the folder
+  it writes is an ordinary collection that every other verb accepts. Songs are separated from
+  applause by **spectral flatness** rather than by level — an enthusiastic room is as loud as the
+  band — with the threshold taken from each recording's own bimodal distribution, guarded so that a
+  single-mode recording is not cut in half. A concert arriving as several camera files is one
+  concert: a span that runs to the end of one file and resumes at the start of the next is joined,
+  and the minimum-song test is applied after that join rather than before.
+- **Video containers** (`.mp4`, `.mov`, `.mkv`, `.m4v`, `.avi`, `.mts`, `.m2ts`) are accepted by
+  `segment`, decoded through ffmpeg, which is required only when such a file is actually handed
+  over. Collections stay audio-only.
+- `--min-song` and `--min-gap` on the command line.
+
+### Fixed
+- **`thumbnails` no longer dies on a collection whose audio sits in the root folder.** That album is
+  named `"."`, and `"." + ".png"` is `..png` — a name Path reads as a dotfile with no suffix, so PIL
+  could not infer a format and refused to save the contact sheet, losing the run after every card
+  had been rendered. The README's own quickstart produces this album.
+
+### Changed
+- `cli` imports matplotlib lazily, at the two verbs that plot. `segment` has no figures to draw and
+  should not pay for the import.
+
+
 ## 0.5.0 — 2026-08-12
 
 ### Added

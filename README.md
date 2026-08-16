@@ -43,6 +43,15 @@ categories, and the corpus extremes.
 | `thumbnails` | one visual card per track (`--style`, seventeen styles) |
 | `poster` | the whole collection as one image (`--style vinyl` for discs) |
 | `sonic` | a ~12-second audio summary per track, plus album medleys |
+| `segment` | finds the songs in a concert recording and writes one file per song |
+
+A live recording is not a collection until it is cut into songs, which is what `segment` is for
+(video files included — concerts usually arrive as video):
+
+```bash
+musiscape segment ~/video/concert -o ~/video/concert/analysis
+musiscape report  ~/video/concert/analysis/songs
+```
 
 Common options: `-o` sets the output folder (default `<root>/analysis`),
 `--workers N` parallelises, `--duration S` analyses only the first S seconds
