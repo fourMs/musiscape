@@ -13,11 +13,16 @@ tools apply to a live set. Every number it reports carries a musical name.
 ![album fingerprints](img/fingerprints.png)
 
 musiscape is a sibling of [ambiscape](https://github.com/fourMs/ambiscape)
-(soundscapes). Its circular-statistics and Schaeffer typology machinery
-gives pulse clarity for rubato-heavy material where BPM fails, tonal centres
-on the circle of fifths, and object-level TARTYP / TARSOM proxies; the
-circular statistics themselves come from
-[micromotion](https://github.com/fourMs/micromotion).
+(soundscapes) and [micromotion](https://github.com/fourMs/micromotion)
+(human micromotion). Each runs on its own, and musiscape needs neither
+installed.
+
+Where a measure appears in more than one toolbox it has one owner and one
+implementation, so combining them or moving between them gives the same
+number. Circular statistics belong to micromotion: pulse clarity for
+rubato-heavy material where BPM fails, tonal centres on the circle of
+fifths, and the Rayleigh test all come from there. The object-level
+TARTYP and TARSOM proxies live here, in `musiscape.music`.
 
 ## What it does
 

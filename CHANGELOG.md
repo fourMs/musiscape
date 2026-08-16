@@ -22,6 +22,20 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/); the
 > and musiscape is free to ship. ambiscape still goes last.
 
 
+## Unreleased
+
+### Added
+- Cross-toolbox agreement tests. Any measure appearing in more than one fourMs toolbox has a single
+  owner, so musiscape's circular statistics are pinned against `micromotion`, which owns them, and
+  against ambiscape's standalone copy when it happens to be installed. The ambiscape checks skip
+  when it is not, since musiscape must not require it.
+
+### Changed
+- The related-toolboxes sections say plainly that each package runs on its own and that shared
+  measures have one implementation, replacing a claim that musiscape reuses ambiscape's circular
+  statistics, which stopped being true when they moved to micromotion.
+
+
 ## 0.6.1 — 2026-08-16
 
 ### Fixed

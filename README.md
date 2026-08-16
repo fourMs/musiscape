@@ -76,20 +76,29 @@ with listening.
 ## Related toolboxes
 
 These toolboxes come out of the [fourMs lab](https://github.com/fourMs) at
-the University of Oslo. They are separate packages with separate release
-cycles, but they are built to be used together and share several
-implementations, so a measure computed in one agrees with the same measure
-computed in another.
+the University of Oslo.
 
 - [Musical Gestures Toolbox](https://github.com/fourMs/MGT-python)
-  (`musicalgestures`)—video and audio: motiongrams, videograms, and motion
-  analysis from ordinary video files
-- [ambiscape](https://github.com/fourMs/ambiscape)—soundscapes: the sonic
-  ambience of a place; musiscape reuses its circular statistics and
-  Schaeffer typology machinery
-- [micromotion](https://github.com/fourMs/micromotion)—human micromotion:
-  quantity of motion from optical markers, accelerometers, respiration
+  (`musicalgestures`): video and audio, with motiongrams, videograms and
+  motion analysis from ordinary video files
+- [ambiscape](https://github.com/fourMs/ambiscape): soundscapes, the sonic
+  ambience of a place, including multichannel and ambisonic material
+- [micromotion](https://github.com/fourMs/micromotion): human micromotion,
+  with quantity of motion from optical markers, accelerometers, respiration
   belts and force plates
+
+Each is a separate package with its own release cycle, and each runs on its
+own. musiscape needs none of the others installed to do anything it
+documents.
+
+They are still meant to be combined, so any measure that appears in more
+than one of them has a single owner and a single implementation. Circular
+statistics belong to micromotion, and musiscape imports pulse clarity,
+fifths-circle centres and the Rayleigh test from there rather than keeping
+its own copy. Switching a measure between toolboxes, or computing it in two
+of them, gives the same number. A test suite in each package checks that
+against the owning implementation, and skips when the sibling is not
+installed.
 
 ## Licence and credit
 
