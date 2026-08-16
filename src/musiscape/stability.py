@@ -1,51 +1,32 @@
 """Does an estimate hold up across the track, or only on average?
 
-:mod:`features` gates two descriptors on whole-track statistics, and says
-so plainly: near-uniform chroma makes ``key`` an artefact, and an onset
-envelope with no periodicity makes ``tempo_bpm`` a report of librosa's
-prior. Both gates catch real failures. Both are also *averages over the
-whole track*, and that is a second way to fail --- not by measuring noise,
-but by measuring something real over too long a window.
+:mod:`features` gates two descriptors on whole-track statistics: near-uniform
+chroma makes ``key`` an artefact, and an onset envelope with no periodicity
+makes ``tempo_bpm`` a report of librosa's prior. Both gates catch real
+failures. Both are also averages over the whole track, which is a second way
+to be wrong: not by measuring noise, but by measuring something real over too
+long a window.
 
-Live music is where the difference shows. ``pulse_R`` folds an entire take
-at one global period, so a band that drifts a few BPM across four minutes
-collapses the resultant while playing a perfectly steady beat.
-``chroma_entropy`` averages chroma over the whole take, and a full band in
-a reverberant room flattens that average far past the threshold calibrated
-on solo instrumental material. On a concert measured with these functions,
-seven of eight songs failed both gates, and seven of eight windowed key
-estimates nonetheless agreed with the whole-song one.
+Live music is where the difference shows. ``pulse_R`` folds an entire take at
+one global period, so a band that drifts a few BPM across four minutes
+collapses the resultant while playing a steady beat. ``chroma_entropy``
+averages chroma over the whole take, and a full band in a reverberant room
+flattens that average far past a threshold calibrated on solo instrumental
+material.
 
-So this module measures the same two quantities *per window* and reports
-how much the windows agree. High agreement on a gated track means the gate
-was too coarse, not that the track is tonal or pulsed by luck. Low
-agreement means the track really does wander --- which is itself worth
-knowing, and is a different statement from "unmeasurable".
+This module measures the same two quantities per window and reports how far
+the windows agree. High agreement on a gated track means the gate was too
+coarse for the material. Low agreement means the track really does wander,
+which is worth knowing and is a different statement from "unmeasurable".
 
-**A single-number pulse gate was attempted twice and abandoned, and that is
-a result worth recording rather than a gap.**
-
-Inter-beat regularity fails first. ``beat_track`` fits one global grid, so
-its intervals stay even through a tempo change: a 120 BPM click train and a
-120-then-80 train both come back with beats 0.5 s apart, differing only by
-hop quantisation. The number cannot move.
-
-Beat salience --- onset strength at the tracked beats over the track mean
---- fails second, and more instructively. It looks decisive on synthetic
-material (about 1.2 on white noise, above 13 on a click train) and does not
-survive contact with a real room: across one concert the songs measured
-1.58--1.93 and the applause between them 1.67, with room tone at 1.50.
-Tempogram peak prominence does better and still overlaps: songs 1.09--1.62
-against 1.07--1.24 for applause and room tone.
-
-The reason is not a defective measure. **Applause is rhythmic.** A room
-clapping in near-unison has a periodic onset envelope, and no statistic of
-periodicity alone will separate it from a band. Sorting the two is what
-:mod:`musiscape.concert` uses spectral flatness for, and on a single track
-the honest answer is the tempogram figure read by eye.
-
-What is reported here is therefore the narrower question that can be
-answered: not "is there a pulse" but "does the tempo estimate hold still".
+The question answered is therefore narrow and answerable: not "is there a
+pulse" but "does the estimate hold still". No descriptor here reports whether
+a track has a beat at all, because on real material no statistic of
+periodicity can tell one. Applause is rhythmic, so a room clapping in
+near-unison scores in the same range as the band it is applauding, whether
+measured by beat strength or by tempogram peak prominence. Separating the two
+is what :mod:`musiscape.concert` uses spectral flatness for, and on a single
+track the tempogram figure read by eye is the honest answer.
 
 Both functions take features already computed elsewhere (a chromagram, an
 onset envelope) rather than audio, so adding them to an extraction costs
@@ -75,10 +56,9 @@ def key_stability(chroma: np.ndarray, sr: int, hop: int = 512,
                   win_s: float = WIN_S) -> dict:
     """Krumhansl--Schmuckler key per window, and how often they agree.
 
-    ``chroma`` is a (12, frames) chromagram---``chroma_cqt`` on the
-    harmonic component, as :mod:`features` computes it. Returns the modal
-    key across windows, the share of windows holding it, and the window
-    count.
+    ``chroma`` is a (12, frames) chromagram, ``chroma_cqt`` on the harmonic
+    component as :mod:`features` computes it. Returns the modal key across
+    windows, the share of windows holding it, and the window count.
 
     ``agreement`` is ``None`` when only one window fits: a single window
     agrees with itself trivially, and reporting 1.0 for a short track would
@@ -103,10 +83,8 @@ def tempo_stability(onset_env: np.ndarray, sr: int, hop: int = 512,
     windowed tempo, the share of windows within ``tol`` of it, and the
     number of windows.
 
-    What is *not* returned is any single number answering "is there a beat
-    at all", because two candidates were tried against real material and
-    both failed. See the module docstring: the honest answer on a concert
-    recording is the tempogram figure, read by eye.
+    Nothing is returned for "is there a beat at all"; see the module
+    docstring for why that question has no reliable answer here.
 
     Windowed tempos are folded by metrical octave before being compared. A
     window heard at double or half time agrees about where the beat is, and

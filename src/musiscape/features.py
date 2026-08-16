@@ -11,9 +11,9 @@ not compete with embedding models on raw similarity.
 ``extract_collection`` caches to ``features.json`` in the output folder and
 runs tracks in parallel; delete the file to force re-extraction.
 
-**Two descriptors answer even when there is nothing to answer, and both must
-be gated before use.** This matters whenever the input is not a music
-collection --- field recordings, broadcast audio, anything where "music" was
+Two descriptors answer even when there is nothing to answer, and both must be
+gated before use. This matters whenever the input is not a music
+collection: field recordings, broadcast audio, anything where "music" was
 decided by a detector rather than by a track listing.
 
 ``tempo_bpm`` is librosa's prior-based estimator and it has no failure value:
@@ -21,42 +21,39 @@ given an onset envelope with no periodicity it returns the tempogram bin
 nearest its 120 BPM prior. White noise returns 123.05 BPM, reproducibly. On
 704 five-minute spans of domestic television audio it returned five distinct
 values in all, 93 % of them exactly 123.0, and the other four were the
-adjacent grid points --- a result indistinguishable from noise. **Read
-``pulse_R`` first**: below about 0.1 there is no pulse for a tempo to
-describe, and ``tempo_bpm`` is reporting the prior rather than the track.
+adjacent grid points, a result indistinguishable from noise. Read ``pulse_R``
+first: below about 0.1 there is no pulse for a tempo to describe, and
+``tempo_bpm`` is reporting the prior rather than the track.
 
 ``key`` and ``key_conf`` degrade the same way. The Krumhansl--Schmuckler
 correlation is taken against whatever chroma vector arrives, including a
 near-uniform one. On the same material ``chroma_entropy`` sat at a median
 3.541 against a maximum of log2(12) = 3.585, with 80 % of spans within 2 % of
 that ceiling: no tonal centre exists, so the estimate falls to whichever tiny
-bias survives, and it does so *consistently* --- 78 % of spans came back minor
-and one key took a quarter of them. Consistency is not confidence here.
-**Read ``chroma_entropy`` first**; near the ceiling the key is an artefact,
-and splitting by ``key_conf`` will not reveal it, because the artefact is
+bias survives, and it does so consistently: 78 % of spans came back minor and
+one key took a quarter of them. Consistency is not confidence here. Read
+``chroma_entropy`` first; near the ceiling the key is an artefact, and
+splitting by ``key_conf`` will not reveal it, because the artefact is
 confident.
 
 The spectral and temporal descriptors are unaffected and stay usable on such
 material: onset rate, centroid, flatness, zero-crossing rate, percussive ratio
 and dynamic range all varied normally on the same spans.
 
-**Both gates are whole-track averages, which is a second way to be wrong.**
-They catch a descriptor answering about noise. They do not distinguish that
+Both gates are whole-track averages, which is a second way to be wrong. They
+catch a descriptor answering about noise, but they do not distinguish that
 from a descriptor answering about four minutes of real music at too long a
-timescale, and on live material the second case is the common one: a band
+timescale. On live material the second case is the common one: a band
 drifting a few BPM collapses ``pulse_R`` while playing a steady beat, and a
 full band in a reverberant room flattens mean chroma far past a threshold
-calibrated on solo instrumental recordings. On one concert both gates fired
-on seven of eight songs, all eight of which had an audible beat.
+calibrated on solo instrumental recordings.
 
 :mod:`musiscape.stability` measures the same two quantities per window and
 reports how far the windows agree, which separates the cases. Its results
-travel beside the gated numbers here --- ``key_agreement`` and
-``key_windowed`` beside ``key``, ``tempo_agreement`` and
-``tempo_windowed_bpm`` beside ``tempo_bpm``. It answers "does this estimate
-hold still across the track", which is answerable; it does not attempt "is
-there a pulse at all", which on real material it could not answer --- see
-that module for the two measures tried and why applause defeats both.
+travel beside the gated numbers here: ``key_agreement`` and ``key_windowed``
+beside ``key``, ``tempo_agreement`` and ``tempo_windowed_bpm`` beside
+``tempo_bpm``. They answer whether an estimate holds still across the track.
+Nothing answers whether a track has a pulse at all; see that module.
 """
 from __future__ import annotations
 
@@ -87,10 +84,8 @@ def feats_2hz(y, sr):
     """Chroma, MFCC and RMS aggregated to 2 Hz frames.
 
     Shared by the visual cards and the sonic thumbnails. It lives here
-    rather than in :mod:`thumbnails` because :mod:`sonic` needs it and has
-    no visual output: importing it from the plotting module made an
-    audio-only verb pay for matplotlib, and pay for it late, inside a
-    process that had already loaded the audio stack.
+    rather than in :mod:`thumbnails` so that :mod:`sonic`, which has no
+    visual output, need not import the plotting stack to use it.
     """
     import librosa
     hop = 512
@@ -209,8 +204,8 @@ def _run_pool(indexed_jobs: list, workers: int, fn=_work) -> dict:
     """Run jobs in a process pool; return ``{index: result}`` for those done.
 
     A worker killed by the operating system does not raise an exception in
-    the worker --- the process is gone, so the executor breaks and every
-    future still pending dies with it. Returning what completed lets the
+    the worker, because the process is gone, so the executor breaks and
+    every future still pending dies with it. Returning what completed lets the
     caller retry the rest instead of losing the whole collection, which is
     what ``ProcessPoolExecutor.map`` does when it re-raises on the first
     broken future.
@@ -263,8 +258,8 @@ def extract_collection(coll: Collection, out_dir: str | Path,
                        retry_cap_s: float | None = 600.0) -> Path:
     """Extract every track (parallel, cached) → ``<out_dir>/features.json``.
 
-    Tracks whose worker dies without raising --- an out-of-memory kill on a
-    very long track is the case seen in practice --- are retried one at a
+    Tracks whose worker dies without raising, an out-of-memory kill on a
+    very long track being the case seen in practice, are retried one at a
     time in their own process, with the analysis window capped to
     ``retry_cap_s`` seconds so the retry fits in memory. A capped result
     records ``analysis_capped_s`` so the shortened window is visible in the

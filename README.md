@@ -7,10 +7,14 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21948999.svg)](https://doi.org/10.5281/zenodo.21948999)
 
-musiscape is a Python toolbox that analyses a folder tree of music as a
-collection: albums, similarity, outliers, categories. Point it at a folder
-of audio files—each subfolder counts as an album—and it renders figures,
-tables and thumbnails that let you compare many tracks at a glance.
+A Python toolbox for analysing large music collections and long music
+recordings.
+
+Point it at a folder of audio files, where each subfolder counts as an
+album, and it renders figures, tables and thumbnails that let you compare
+many tracks at a glance: albums, similarity, outliers, categories. Point it
+at a concert recording instead and it finds the songs inside it first, so
+the same tools apply to a live set.
 
 ## Install
 
@@ -48,7 +52,7 @@ categories, and the corpus extremes.
 | `pdf` | one PDF: a summary table, then a page of figures per track |
 
 A live recording is not a collection until it is cut into songs, which is what `segment` is for
-(video files included — concerts usually arrive as video):
+(video files included, since concerts usually arrive as video):
 
 ```bash
 musiscape segment ~/video/concert -o ~/video/concert/analysis

@@ -9,7 +9,8 @@ authors:
     orcid: "https://orcid.org/0000-0001-6171-8743"
 repository-code: "https://github.com/fourMs/musiscape"
 abstract: >-
-  A toolbox for analysing music collections: corpus fingerprints, similarity landscapes, and honest categorisation from folders of audio.
+  A Python toolbox for analysing large music collections and long music recordings. Corpus fingerprints, similarity landscapes, honest
+  categorisation, and song segmentation of continuous live recordings.
 keywords:
   - music information retrieval
   - corpus analysis

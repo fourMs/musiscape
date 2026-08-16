@@ -1,9 +1,9 @@
 """One PDF: a summary table, then a page of figures per track.
 
 The Markdown report in :mod:`report` is for reading on screen next to the
-audio. This is the thing you hand someone --- a front table that fits an
-entire concert on one page, and behind it one page per track carrying the
-figures the table's numbers came from.
+audio. This is the one to hand someone: a front table that fits an entire
+concert on a page, and behind it one page per track carrying the figures
+the table's numbers came from.
 
 Every estimate is printed with its cross-check beside it rather than alone.
 ``key`` and ``tempo_bpm`` each travel with the share of 20-second windows
@@ -12,9 +12,9 @@ this report is never presented as more certain than it is, and the reader
 can see which tracks the analysis is confident about without knowing
 anything about how it works.
 
-No column claims to say whether a track has a pulse. Nothing measured here
-could tell a band from an audience clapping along, and a column that
-implied otherwise would be worse than none --- see :mod:`stability`.
+No column claims to say whether a track has a pulse, because no measure
+here distinguishes a band from an audience clapping along. See
+:mod:`stability`.
 
 Written with matplotlib's ``PdfPages``, so no PDF library is needed beyond
 what the package already depends on.
@@ -39,7 +39,7 @@ WEAK = 0.5
 
 
 def confidence(agreement: float | None) -> str:
-    """Word for a window-agreement share, or ``"—"`` when unmeasured."""
+    """Word for a window-agreement share, or a dash when unmeasured."""
     if agreement is None:
         return "—"
     if agreement >= STRONG:

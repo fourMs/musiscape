@@ -1,34 +1,24 @@
-"""Librosa-based tempogram and chromagram (optional ``[music]`` extra).
+"""Tempogram, chromagram, and the circular views built on them.
 
-Complements the built-in analyses with the MIR-standard views: the
-**tempogram** (onset autocorrelation over time, in BPM — against which the
-windowed-ACF tempogram in :mod:`rhythm` can be cross-checked) and the
-**chromagram** (12-bin pitch-class energy over time, the time-resolved
-counterpart of :func:`ambiscape.tonality.pitch_class_profile`).
+The MIR-standard time-resolved views: the tempogram (onset autocorrelation
+over time, in BPM) and the chromagram (12-bin pitch-class energy over time).
+:mod:`musiscape.figures` draws both with labelled axes.
 
-Three circular-statistics views build on :mod:`micromotion.circular`, which
-owns circular statistics across these toolboxes:
-:func:`pulse_clarity` (metric lock of onsets, robust where plain BPM fails
-on rubato material), :func:`fifths_center` (tonal centre + focus of a
-chroma vector on the circle of fifths), and
-:func:`tonal_center_spread` (how tightly a set of recordings clusters in
-key space — a between-recording statistic with no linear equivalent).
-:func:`tartyp_profile` classifies onset-bounded sound objects on a
-simplified Schaeffer typology grid — the object-level counterpart of the
-regime-level :func:`ambiscape.draft.schaeffer_hint`.
+Three views use circular statistics, which come from
+:mod:`micromotion.circular`:
 
-Audio is read from the W channel and resampled to 22.05 kHz; long sessions
-are fine (a 25 min file takes on the order of a minute). Requires
-``pip install "ambiscape[music]"``.
+- :func:`pulse_clarity`, the metric lock of the onsets, useful where a plain
+  BPM estimate fails on rubato material;
+- :func:`fifths_center`, the tonal centre and focus of a chroma vector on the
+  circle of fifths;
+- :func:`tonal_center_spread`, how tightly a set of recordings clusters in
+  key space, a between-recording statistic with no linear equivalent.
 
-**Moved here from ambiscape on 2026-08-12.** It had lived in the soundscape
-toolbox while musiscape --- the music toolbox --- imported six of its symbols
-across three modules, and ambiscape's own library code never touched it; only
-one CLI subcommand did. Nothing was duplicated, so the move was a relocation
-rather than a merge, and it removes musiscape's dependency on ambiscape
-entirely. What it needed from ambiscape's circular statistics now comes from
-micromotion, which owns them.
+:func:`tartyp_profile` classifies onset-bounded sound objects on a simplified
+Schaeffer typology grid; see the Schaeffer guide for what the classes mean.
 
+Audio is resampled to 22.05 kHz. Long recordings are fine: a 25 minute file
+takes on the order of a minute.
 """
 from __future__ import annotations
 
@@ -43,7 +33,7 @@ def _require_librosa():
         return librosa
     except ImportError as e:
         raise ImportError(
-            "librosa is required: pip install 'ambiscape[music]'") from e
+            "librosa is required: pip install musiscape") from e
 
 
 def tempogram(y, sr, hop=512, win_s=8.0):
@@ -80,8 +70,9 @@ def chromagram(y, sr, hop=512):
 
 # --------------------------------------------------------------------------
 # Circular-statistics views and the object-level Schaeffer profile.
-# Developed on a five-album solo-harp catalogue (57 tracks); the TARTYP
-# thresholds below are calibrated on that tonal instrumental corpus.
+# The TARTYP thresholds below are calibrated on a tonal instrumental corpus
+# (a five-album solo-harp catalogue, 57 tracks), and should be treated as
+# indicative on other material.
 
 FIFTHS_ANGLE = 2 * np.pi * (7 * np.arange(12) % 12) / 12
 
@@ -89,9 +80,7 @@ FIFTHS_ANGLE = 2 * np.pi * (7 * np.arange(12) % 12) / 12
 # peak-picked numerical noise on steady signals O(0.01).
 ONSET_FLOOR = 0.5
 
-#: Note names. Twelve strings with one correct answer, so keeping a copy
-#: here rather than importing ambiscape's is duplication in name only ---
-#: and it is what lets this module stand without the audio toolbox.
+#: Note names, indexed by pitch class.
 NOTE = ("C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B")
 
 
@@ -148,9 +137,8 @@ def fifths_center(chroma) -> dict:
     chroma-weighted resultant taken: the mean angle is the tonal centre
     (returned as the nearest note name and as an angle in fifths steps),
     R the tonal focus — diatonic material concentrates on one arc, chromatic
-    or inharmonic material smears. Complements
-    :func:`ambiscape.tonality.pitch_class_profile`, which keeps the full
-    12-bin shape.
+    or inharmonic material smears. Where the full 12-bin shape is wanted,
+    use the chroma vector itself.
     """
     from micromotion.circular import circ_mean
     w = np.asarray(chroma, float)
@@ -200,11 +188,9 @@ def tartyp_profile(y, sr, hop=512) -> dict:
     (``''``) from duration and 4–20 Hz envelope modulation. Returns the
     share of sounding time per type plus the object count.
 
-    These are signal proxies for aural categories — a complement to reduced
-    listening, not a substitute. Mass maps onto the annotation vocabulary of
-    :mod:`ambiscape.taxonomy` roughly as N→tonic, Y→tonic-complex,
-    X→complex/noise; the regime-level counterpart is
-    :func:`ambiscape.draft.schaeffer_hint`.
+    These are signal proxies for aural categories, a complement to reduced
+    listening rather than a substitute. Mass reads roughly as N for tonic,
+    Y for tonic-complex and X for complex or noisy objects.
     """
     librosa = _require_librosa()
     S = np.abs(librosa.stft(y, n_fft=2048, hop_length=hop))

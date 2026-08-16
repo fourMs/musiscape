@@ -34,7 +34,7 @@ exist, though `thumbnails` will use it if it is there.
 
 `segment` is the exception to the collection rule: it reads a folder of *recordings* rather than a
 collection, because a folder of camera files holds no audio files at all. What it writes is a
-collection, which every other verb then accepts — see [Concerts & long recordings](guide/concerts.md).
+collection, which every other verb then accepts. See [Concerts & long recordings](guide/concerts.md).
 
 ## Options
 
@@ -56,13 +56,13 @@ each one shows is in [Visual thumbnails & posters](guide/thumbnails.md).
 
 ## Figures vs. thumbnails
 
-Two different jobs, deliberately kept apart. `thumbnails` draws cards for *browsing*: no axes, because
-at card size axes are noise, and the point is to recognise a piece at a glance. `figures` draws the
+Two different jobs, deliberately kept apart. `thumbnails` draws cards for *browsing*: no axes, since
+at card size axes are noise and the point is to recognise a piece at a glance. `figures` draws the
 same material to be *read*: every axis carries its unit, time runs in `m:ss`, and the tempo axis is
 logarithmic so that 60→120 occupies the same space as 120→240. Use the cards to find the track and
 the figures to argue about it.
 
-`pdf` puts both kinds of information in one document — a table of every estimate with the share of
+`pdf` puts both kinds of information in one document: a table of every estimate with the share of
 analysis windows that agreed on it, then one page of figures per track. Nothing in it claims to say
 whether a track has a pulse; see [Concerts & long recordings](guide/concerts.md) for why that
 question resisted every measure tried.

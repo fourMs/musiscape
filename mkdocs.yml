@@ -1,5 +1,5 @@
 site_name: musiscape
-site_description: A toolbox for analysing music collections — corpus fingerprints, similarity landscapes, visual thumbnails, and honest categorisation
+site_description: A Python toolbox for analysing large music collections and long music recordings
 site_url: https://fourms.github.io/musiscape/
 repo_url: https://github.com/fourMs/musiscape
 repo_name: fourMs/musiscape

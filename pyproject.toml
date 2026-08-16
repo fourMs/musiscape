@@ -9,7 +9,7 @@ name = "musiscape"
 # reporting 0.3.1) because the bump touched only this file, so the
 # number now lives in one place and setuptools reads it from there.
 dynamic = ["version"]
-description = "A toolbox for analysing music collections: corpus fingerprints, similarity landscapes, and honest categorisation from folders of audio files"
+description = "A Python toolbox for analysing large music collections and long music recordings"
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [{ name = "Alexander Refsum Jensenius" }]

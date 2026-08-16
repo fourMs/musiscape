@@ -80,19 +80,17 @@ def open_collection(root: str | Path) -> Collection:
 def album_stem(album: str) -> str:
     """Filename stem for a per-album output file.
 
-    Audio sitting in the collection root forms the album ``"."``, and
-    ``"." + ".png"`` is ``..png`` --- a name Path reads as a dotfile with
-    no suffix, which PIL then refuses to save. A ``". medley.wav"`` keeps
-    its suffix but is hidden on every Unix desktop. Leading dots go for
-    those two reasons rather than for tidiness. This lives here because it
-    is this module that decides an album is called ``"."``.
+    Audio sitting in the collection root forms the album ``"."``. Naming a
+    file after it directly gives ``..png``, which Path reads as a dotfile
+    with no suffix and PIL refuses to save, or ``". medley.wav"``, which is
+    hidden on every Unix desktop. Leading dots are therefore dropped.
     """
     stem = album.replace("/", "_").lstrip(".")
     return stem or "collection"
 
 
 def list_recordings(root: str | Path) -> list[Path]:
-    """Recordings under ``root``, in name order---which is playing order.
+    """Recordings under ``root``, in name order, which is playing order.
 
     Cameras number their files sequentially, so sorting by name puts a
     split concert back in the order it was played. A folder whose files
@@ -117,7 +115,7 @@ def load(track: Track, sr: int = 22050, duration: float | None = None):
 
 def load_recording(path: str | Path, sr: int = 22050, offset: float = 0.0,
                    duration: float | None = None):
-    """Load any recording---audio file or video container---as mono float.
+    """Load any recording, audio file or video container, as mono float.
 
     Audio goes through librosa as everywhere else. Video is decoded by
     ffmpeg, which is not a package dependency: it is asked for only when a

@@ -1,14 +1,14 @@
-"""Songs out of a continuous recording---the concert, not the collection.
+"""Songs out of a continuous recording: the concert, not the collection.
 
 The rest of musiscape assumes one file is one track. A concert is the other
-shape: one long recording (often several, when the camera split at a file
-size limit) holding a sequence of songs separated by applause, tuning and
+shape: one long recording, often several when the camera split at a file
+size limit, holding a sequence of songs separated by applause, tuning and
 talk. This module finds those songs so the collection tools can be pointed
 at them.
 
-What separates a song from the space around it here is not level alone---an
-enthusiastic room is as loud as the band---but **spectral flatness**.
-Applause is broadband noise and measures flat; played music is tonal and
+What separates a song from the space around it is not level. An
+enthusiastic room is as loud as the band. It is spectral flatness: applause
+is broadband noise and measures flat, while played music is tonal and
 measures peaked, typically an order of magnitude lower. The split between
 the two is taken from each recording's own distribution rather than from a
 fixed number, because the ratio survives across rooms and microphones while
@@ -25,13 +25,13 @@ from .io import load_recording
 
 #: Minimum separation (log10 units) between the two flatness modes before
 #: the split is believed. A recording that is all music has one mode, and
-#: Otsu will still cut it in half if allowed to.
+#: Otsu would still cut it in half if allowed to.
 BIMODAL_MIN_DECADES = 0.7
 
 #: Minimum share of frames on the smaller side of the cut. Separation alone
 #: does not make a mode: one stray frame far from an otherwise single spike
-#: separates the class means beautifully while the threshold itself lands
-#: inside the spike, splitting a continuous recording down the middle.
+#: separates the class means while the threshold itself lands inside the
+#: spike, splitting a continuous recording down the middle.
 BIMODAL_MIN_SHARE = 0.05
 
 #: Level floor, in dB below the recording's 95th percentile frame. Silence
@@ -64,9 +64,9 @@ def music_mask(y: np.ndarray, sr: int, hop_s: float = 1.0) -> np.ndarray:
     Frames are kept when they are both tonal (spectral flatness below a
     threshold taken from the recording's own bimodal distribution) and
     audible (within :data:`LEVEL_FLOOR_DB` of the recording's loud frames).
-    When the flatness distribution has only one mode---a recording that is
-    music throughout, or applause throughout---the flatness test is dropped
-    rather than invented, and level alone decides.
+    When the flatness distribution has only one mode, as in a recording
+    that is music throughout or applause throughout, the flatness test is
+    dropped rather than invented and level alone decides.
     """
     import librosa
 
@@ -105,11 +105,10 @@ def segments(mask: np.ndarray, hop_s: float = 1.0,
              min_gap_s: float = 8.0) -> list[dict]:
     """Turn a music mask into song spans.
 
-    Runs of music separated by less than ``min_gap_s`` are one song---a
-    quiet bar or a held breath is not the end of a piece---and spans
-    shorter than ``min_song_s`` are not songs at all, which is what keeps
-    tuning, a spoken introduction over a held chord, or a false start out
-    of the listing.
+    Runs of music separated by less than ``min_gap_s`` are one song, since
+    a quiet bar or a held breath is not the end of a piece. Spans shorter
+    than ``min_song_s`` are not songs at all, which keeps tuning, a spoken
+    introduction over a held chord, and a false start out of the listing.
 
     Returns one dict per song with ``start_s``, ``end_s`` and
     ``duration_s``, in time order.
@@ -146,8 +145,8 @@ def find_songs(paths, sr: int = 22050, hop_s: float = 1.0,
                join_tol_s: float = JOIN_TOL_S) -> list[dict]:
     """Locate the songs across an ordered sequence of recording files.
 
-    ``paths`` must be in playing order. Times are reported on a **concert
-    clock** that runs from the start of the first file and treats the files
+    ``paths`` must be in playing order. Times are reported on a concert
+    clock that runs from the start of the first file and treats the files
     as butted together: a camera that stops and restarts loses a few
     seconds at each join, and that loss is not recoverable from the audio,
     so the clock drifts behind wall time by however long the changeovers
@@ -155,9 +154,10 @@ def find_songs(paths, sr: int = 22050, hop_s: float = 1.0,
     source file, which is what the clips are cut from.
 
     A span reaching the end of one file and resuming at the start of the
-    next is one song: the camera splits at a size limit, not at a musical
-    boundary. The minimum-length test is applied *after* that join, so a
-    song cut ten seconds before its end is not discarded as a fragment.
+    next is one song, because the camera splits at a size limit rather than
+    at a musical boundary. The minimum-length test is applied after that
+    join, so a song cut ten seconds before its end is not discarded as a
+    fragment.
     """
     paths = [Path(p) for p in paths]
     songs: list[dict] = []
@@ -191,7 +191,7 @@ def find_songs(paths, sr: int = 22050, hop_s: float = 1.0,
 
 
 def _clip_name(song: dict) -> str:
-    """``03-MAH08538-1204.flac``---order, source file, concert timecode."""
+    """``03-MAH08538-1204.flac``: order, source file, concert timecode."""
     stem = Path(song["parts"][0]["file"]).stem
     t = int(song["start_s"])
     return f"{song['index']:02d}-{stem}-{t // 60:02d}{t % 60:02d}.flac"

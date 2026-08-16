@@ -1,18 +1,23 @@
 # musiscape
 
-A toolbox for analysing music collections in the form of audio files in
-folders. Existing tools answer the question *"what is this track?"*, while
-musiscape answers "what is this collection?". It shows how albums differ,
-which tracks resemble which, how internally consistent each album is, where
-the outliers live, and what categories the corpus falls into. Every number
-it reports carries a musical name.
+A Python toolbox for analysing large music collections and long music
+recordings.
+
+Existing tools answer the question *"what is this track?"*. musiscape
+answers two others. For a collection, it shows how albums differ, which
+tracks resemble which, how internally consistent each album is, where the
+outliers live, and what categories the corpus falls into. For a long
+recording such as a concert, it finds the songs inside it first, so the same
+tools apply to a live set. Every number it reports carries a musical name.
 
 ![album fingerprints](img/fingerprints.png)
 
 musiscape is a sibling of [ambiscape](https://github.com/fourMs/ambiscape)
-(soundscapes), reusing its circular-statistics and Schaeffer typology
-machinery: pulse clarity for rubato-heavy material where BPM fails, tonal
-centres on the circle of fifths, and object-level TARTYP / TARSOM proxies.
+(soundscapes). Its circular-statistics and Schaeffer typology machinery
+gives pulse clarity for rubato-heavy material where BPM fails, tonal centres
+on the circle of fifths, and object-level TARTYP / TARSOM proxies; the
+circular statistics themselves come from
+[micromotion](https://github.com/fourMs/micromotion).
 
 ## What it does
 

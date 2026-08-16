@@ -120,15 +120,14 @@ def affinity_plot(affinity: dict, out_path: str | Path, title: str = ""):
 #
 # The thumbnail cards in :mod:`thumbnails` are deliberately unlabelled: they
 # are for browsing a collection, where axes would be noise at card size.
-# These are the other thing --- figures you read numbers off --- so every
-# axis carries its unit and time runs in mm:ss rather than in seconds,
-# because a four-minute song on a seconds axis cannot be read.
+# These are the counterpart, meant to be read rather than glanced at, so
+# every axis carries its unit and time runs in m:ss rather than in seconds.
 
 #: Pitch-class names, bottom to top on a chromagram's y axis.
 PITCH_CLASSES = ("C", "C#", "D", "D#", "E", "F",
                  "F#", "G", "G#", "A", "A#", "B")
 
-#: Tempo range drawn, in BPM. Outside this the tempogram is metrical
+#: Tempo range drawn, in BPM. Outside this the tempogram shows metrical
 #: aliasing rather than anything anyone taps to.
 BPM_RANGE = (30.0, 300.0)
 
@@ -154,10 +153,9 @@ def draw_tempogram(ax, y, sr, hop: int = 512, mark_bpm: float | None = None):
     over it as a dashed line so the two can be compared.
 
     ``mark_bpm`` sets which tempo that line shows; the default is this
-    figure's own estimate. Callers that quote a tempo elsewhere on the page
-    should pass theirs, because the two are computed from different onset
-    envelopes and a page that shows one number in its header and another on
-    its plot contradicts itself.
+    figure's own estimate. Callers quoting a tempo elsewhere on the page
+    should pass theirs, since the two come from different onset envelopes
+    and would otherwise disagree in print.
     """
     from . import music as amusic
     times, bpm, T, t_est = amusic.tempogram(y, sr, hop=hop)
@@ -170,10 +168,10 @@ def draw_tempogram(ax, y, sr, hop: int = 512, mark_bpm: float | None = None):
     ax.text(times[-1], t_est, f" {t_est:.0f} BPM ", color="#ffffff",
             fontsize=8, va="center", ha="right",
             bbox=dict(fc="#00000066", ec="none", pad=1.5))
-    # A log tempo axis spaces the musically-equal steps equally --- 60 to
-    # 120 is the same distance as 120 to 240 --- but its automatic ticks
-    # label the axis "3 x 10^2", which is the one thing a tempo axis must
-    # not say. Fixed BPM ticks, minor ticks off.
+    # A log tempo axis spaces musically equal steps equally, so 60 to 120
+    # covers the same distance as 120 to 240. Its automatic ticks would
+    # label the axis "3 x 10^2", so the BPM ticks are fixed and the minor
+    # ticks are off.
     ax.set_yscale("log")
     ticks = [40, 60, 80, 100, 120, 160, 200, 240]
     ax.set_yticks(ticks)

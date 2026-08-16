@@ -32,7 +32,7 @@ Each track becomes one card, in a choice of representations:
 - ``stereo``—the stereo field: a pan-by-frequency spectrogram (blue =
   left, red = right, ink strength = energy) with a goniometer inset, over
   a width-and-correlation timeline. For multichannel and ambisonic
-  spatial analysis see ``ambiscape.spatial``;
+  spatial analysis see the ambiscape toolbox;
 - ``tarsom``—the track's position on Schaeffer's seven morphological
   criteria (TARSOM: masse, timbre harmonique, grain, allure, dynamique,
   profil mélodique, profil de masse) as a centre–periphery rose: each
@@ -595,7 +595,8 @@ def _draw_main(ax, y, sr, style, color="#2a78d6", y2=None):
             ax.set_xlim(0.05, 2.5); ax.set_ylim(0.05, 2.5)
             # beat-wheel inset: onset phases + pulse-clarity arrow
             try:
-                from ambiscape.circstats import mean_resultant
+                from micromotion.circular import circ_mean
+
                 from .music import dominant_period
                 w = env[fr]
                 p0 = dominant_period(env, sr)
@@ -603,8 +604,8 @@ def _draw_main(ax, y, sr, style, color="#2a78d6", y2=None):
                 for p in (p0 / 2, p0, p0 * 2):
                     if not 60 / 200 <= p <= 60 / 40:
                         continue
-                    mu, R = mean_resultant(2 * np.pi * (t / p % 1.0),
-                                           weights=w)
+                    _c = circ_mean(2 * np.pi * (t / p % 1.0), weights=w)
+                    mu, R = _c["mean"], _c["R"]
                     if R > best[1]:
                         best = (p, R, mu)
                 p, R, mu = best

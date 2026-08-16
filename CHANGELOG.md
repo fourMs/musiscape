@@ -22,6 +22,23 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/); the
 > and musiscape is free to ship. ambiscape still goes last.
 
 
+## 0.6.1 — 2026-08-16
+
+### Fixed
+- **The `rhythm` card's beat-wheel inset is drawn again.** It was computed with a function imported
+  from `ambiscape`, which is not a dependency, inside a `try` that swallowed the ImportError. The
+  inset is documented behaviour, so for anyone installing musiscape from PyPI a documented feature
+  was silently missing. It now uses `micromotion.circular`, which the package already requires.
+- Stale cross-references and an install hint pointing at `ambiscape[music]` removed from
+  `musiscape.music`, which has not lived in ambiscape for some time.
+
+### Changed
+- Description reworded to "A Python toolbox for analysing large music collections and long music
+  recordings", which covers what `segment` added.
+- Documentation and wiki rewritten for readers meeting the toolbox for the first time, with
+  development history left to this file and to git.
+
+
 ## 0.6.0 — 2026-08-16
 
 ### Added
