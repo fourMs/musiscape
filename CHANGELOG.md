@@ -22,7 +22,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/); the
 > and musiscape is free to ship. ambiscape still goes last.
 
 
-## Unreleased
+## 0.6.0 — 2026-08-16
 
 ### Added
 - **`musiscape.concert`: the songs inside a continuous recording.** The toolbox assumed one file is
