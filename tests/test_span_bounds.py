@@ -79,3 +79,33 @@ def test_written_clip_is_as_long_as_the_manifest_says(tmp_path):
         actual = sf.info(str(out / "songs" / song["file"])).duration
         assert actual == pytest.approx(song["duration_s"], abs=0.2), \
             f"{song['file']}: file {actual:.1f}s, manifest {song['duration_s']:.1f}s"
+
+
+# --------------------------------------------------------------------------
+# how long a break has to be before it ends a song
+
+def test_default_min_gap_bridges_a_measurement_flicker():
+    """Near the flatness threshold the per-second decision is unstable.
+
+    On the reference concert 17 % of frames sit within 0.2 of the Otsu cut,
+    and a passage of continuous music at a steady -20 dB produced runs of up
+    to eight non-music seconds. A default that splits on eight is on a
+    cliff: the same concert yields nine songs at 8 s and eight at anything
+    from 10 to 15.
+    """
+    mask = np.ones(300, dtype=bool)
+    mask[150:158] = False                       # eight seconds of flicker
+
+    spans = concert.segments(mask, hop_s=1.0, min_song_s=60.0)
+
+    assert len(spans) == 1, [s["duration_s"] for s in spans]
+
+
+def test_a_real_break_still_ends_a_song():
+    """Between-song breaks on the reference concert ran 24 s and longer."""
+    mask = np.ones(400, dtype=bool)
+    mask[150:174] = False                       # twenty-four seconds
+
+    spans = concert.segments(mask, hop_s=1.0, min_song_s=60.0)
+
+    assert len(spans) == 2

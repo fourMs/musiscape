@@ -46,7 +46,7 @@ collection, which every other verb then accepts. See [Concerts & long recordings
 | `-k N` | `categorize`, `report` | number of categories; chosen automatically when omitted |
 | `--style NAME` | `thumbnails`, `poster` | which thumbnail to draw, default `mel` |
 | `--min-song N` | `segment` | shortest span counted as a song, default 60 s |
-| `--min-gap N` | `segment` | shortest break that ends a song, default 8 s |
+| `--min-gap N` | `segment` | shortest break that ends a song, default 12 s |
 | `--width N` | `figures`, `segment` | export width in pixels, default 1920 |
 
 `--style` accepts `mel`, `chroma`, `tempo`, `combo`, `barcode`, `ssm`, `trajectory`, `keyscape`,

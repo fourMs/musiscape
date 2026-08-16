@@ -35,8 +35,8 @@ def main(argv=None):
                         "ssm|trajectory|keyscape|rhythm|wave|vinyl|spiral|tonnetz|arcs|schaeffer|tarsom|stereo (default mel); poster accepts barcode|vinyl")
     p.add_argument("--min-song", type=float, default=60.0,
                    help="segment: shortest span counted as a song (s)")
-    p.add_argument("--min-gap", type=float, default=8.0,
-                   help="segment: shortest silence that ends a song (s)")
+    p.add_argument("--min-gap", type=float, default=12.0,
+                   help="segment: shortest break that ends a song (s)")
     p.add_argument("--width", type=int, default=1920,
                    help="figures: export width in pixels (default 1920)")
     args = p.parse_args(argv)

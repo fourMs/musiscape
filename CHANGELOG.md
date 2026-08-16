@@ -22,6 +22,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/); the
 > and musiscape is free to ship. ambiscape still goes last.
 
 
+## 0.7.3 — 2026-08-16
+
+### Changed
+- **`--min-gap` defaults to 12 s rather than 8.** Chosen from the stability of the answer rather
+  than from taste. Near the flatness threshold the per-second decision is unstable: on the reference
+  concert 17 % of frames sat within 0.2 of the Otsu cut, and a passage of continuous music at a
+  steady −20 dB produced runs of up to eight non-music seconds. That concert yields nine songs at a
+  gap of 8 s and eight at anything from 10 to 15, so the old default sat on a cliff and the new one
+  is in the middle of the plateau. Real breaks between songs on that material ran 24 s and longer.
+
+
 ## 0.7.2 — 2026-08-16
 
 ### Fixed

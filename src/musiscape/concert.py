@@ -38,6 +38,16 @@ BIMODAL_MIN_SHARE = 0.05
 #: and distant room tone fall out here; the flatness test does the rest.
 LEVEL_FLOOR_DB = 15.0
 
+#: Shortest break that ends a song. Set from the stability of the answer
+#: rather than from taste: near the flatness threshold the per-second
+#: decision is unstable, and on the reference concert 17 % of frames sat
+#: within 0.2 of the Otsu cut, with a continuous passage at a steady -20 dB
+#: producing runs of up to eight non-music seconds. That concert yields nine
+#: songs at a gap of 8 s and eight at anything from 10 to 15, so 8 is on a
+#: cliff and 12 is in the middle of the plateau. Real breaks between songs
+#: ran 24 s and longer.
+MIN_GAP_S = 12.0
+
 
 def _otsu(x: np.ndarray, bins: int = 128) -> tuple[float, float, float]:
     """Otsu's threshold on ``x``, with the two class means.
@@ -125,7 +135,7 @@ def _runs(mask: np.ndarray) -> list[tuple[int, int]]:
 
 def segments(mask: np.ndarray, hop_s: float = 1.0,
              min_song_s: float = 60.0,
-             min_gap_s: float = 8.0) -> list[dict]:
+             min_gap_s: float = MIN_GAP_S) -> list[dict]:
     """Turn a music mask into song spans.
 
     Runs of music separated by less than ``min_gap_s`` are one song, since
@@ -164,7 +174,7 @@ JOIN_TOL_S = 5.0
 
 
 def find_songs(paths, sr: int = 22050, hop_s: float = 1.0,
-               min_song_s: float = 60.0, min_gap_s: float = 8.0,
+               min_song_s: float = 60.0, min_gap_s: float = MIN_GAP_S,
                join_tol_s: float = JOIN_TOL_S) -> list[dict]:
     """Locate the songs across an ordered sequence of recording files.
 
@@ -222,7 +232,7 @@ def _clip_name(song: dict) -> str:
 
 def split_recording(paths, out_dir: str | Path, sr: int = 22050,
                     write_sr: int = 44100, hop_s: float = 1.0,
-                    min_song_s: float = 60.0, min_gap_s: float = 8.0,
+                    min_song_s: float = 60.0, min_gap_s: float = MIN_GAP_S,
                     join_tol_s: float = JOIN_TOL_S) -> Path:
     """Cut a concert into one audio file per song, plus a manifest.
 

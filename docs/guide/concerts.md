@@ -49,10 +49,16 @@ Runs of music separated by less than `--min-gap` seconds are one song: a quiet b
 does not end a piece. Spans shorter than `--min-song` are not songs at all, which keeps tuning, a
 false start, and a spoken introduction over a held chord out of the listing.
 
+The gap default is worth understanding before changing it. Near the flatness threshold the
+per-second decision is unstable, so a passage of continuous music can produce a run of several
+non-music seconds that is measurement noise rather than a break. Vary `--min-gap` and watch the
+song count: a value on a plateau is a real answer, one on a cliff is an artefact. On the reference
+concert the count is nine at 8 s and eight anywhere from 10 to 15, which is why the default is 12.
+
 | option | default | meaning |
 |---|---|---|
 | `--min-song` | 60 s | shortest span counted as a song |
-| `--min-gap` | 8 s | shortest break that ends a song |
+| `--min-gap` | 12 s | shortest break that ends a song |
 
 ## Several files, one concert
 
