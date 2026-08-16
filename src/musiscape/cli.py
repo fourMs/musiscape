@@ -5,7 +5,7 @@ import argparse
 import json
 from pathlib import Path
 
-from . import categorize, corpus, features, figures, report
+from . import categorize, corpus, features, report
 from .io import open_collection
 
 
@@ -21,8 +21,10 @@ def main(argv=None):
                     "similarity landscape, honest categories.")
     p.add_argument("verb", choices=["probe", "extract", "fingerprint",
                                     "landscape", "categorize", "report",
-                                    "thumbnails", "poster", "sonic"])
-    p.add_argument("folder", help="collection root (albums = subfolders)")
+                                    "thumbnails", "poster", "sonic",
+                                    "segment", "figures", "pdf"])
+    p.add_argument("folder", help="collection root (albums = subfolders); "
+                                  "for segment, a folder of recordings")
     p.add_argument("-o", "--out", help="output folder (default <root>/analysis)")
     p.add_argument("--workers", type=int, default=4)
     p.add_argument("--duration", type=float,
@@ -31,7 +33,36 @@ def main(argv=None):
     p.add_argument("--style", default="mel",
                    help="thumbnail style: mel|chroma|tempo|combo|barcode|"
                         "ssm|trajectory|keyscape|rhythm|wave|vinyl|spiral|tonnetz|arcs|schaeffer|tarsom|stereo (default mel); poster accepts barcode|vinyl")
+    p.add_argument("--min-song", type=float, default=60.0,
+                   help="segment: shortest span counted as a song (s)")
+    p.add_argument("--min-gap", type=float, default=8.0,
+                   help="segment: shortest silence that ends a song (s)")
+    p.add_argument("--width", type=int, default=1920,
+                   help="figures: export width in pixels (default 1920)")
     args = p.parse_args(argv)
+
+    # segment runs before the collection is opened: a folder of camera
+    # files holds no audio files at all, and open_collection would refuse
+    # it. Its output folder is where a collection then comes from.
+    if args.verb == "segment":
+        from . import concert
+        from .io import list_recordings
+        root = Path(args.folder).expanduser().resolve()
+        paths = list_recordings(root)
+        out = Path(args.out) if args.out else root / "analysis"
+        manifest = concert.split_recording(paths, out,
+                                           min_song_s=args.min_song,
+                                           min_gap_s=args.min_gap)
+        songs = json.loads(manifest.read_text())
+        for s in songs:
+            t = int(s["start_s"])
+            across = (f" across {len(s['parts'])} files"
+                      if len(s["parts"]) > 1 else "")
+            print(f"{s['index']:2d}. {t // 60:3d}:{t % 60:02d} "
+                  f"{s['duration_s'] / 60:5.1f} min  {s['file']}{across}")
+        print(f"{len(songs)} songs from {len(paths)} recording(s) → "
+              f"{manifest.parent / 'songs'}")
+        return
 
     coll = open_collection(args.folder)
     out = _out(args, coll)
@@ -60,6 +91,27 @@ def main(argv=None):
                                            style=args.style))
         return
 
+    if args.verb == "figures":
+        from . import figures as afig
+        from .io import load
+        fdir = out / "figures"
+        for t in coll.tracks:
+            y, sr = load(t, duration=args.duration)
+            stem = f"{t.album.replace('/', '_')}_{t.title}".lstrip("._")
+            afig.chromagram_plot(y, sr, fdir / f"{stem} chromagram.png",
+                                 width_px=args.width, title=t.title)
+            afig.tempogram_plot(y, sr, fdir / f"{stem} tempogram.png",
+                                width_px=args.width, title=t.title)
+            print(f"[{t.album}] {t.title}", flush=True)
+        print(fdir)
+        return
+
+    if args.verb == "pdf":
+        from . import pdfreport
+        print(pdfreport.build(coll, out, workers=args.workers,
+                              duration=args.duration))
+        return
+
     if args.verb == "probe":
         for a in coll.albums:
             mins = "?"
@@ -76,12 +128,14 @@ def main(argv=None):
     if args.verb == "extract":
         print(f"{len(feats)} tracks → {fpath}")
     elif args.verb == "fingerprint":
+        from . import figures
         stats = corpus.album_stats(feats)
         figures.fingerprints(stats, out / "fingerprints.png",
                              title=coll.root.name)
         (out / "album_stats.json").write_text(json.dumps(stats, indent=1))
         print(out / "fingerprints.png")
     elif args.verb == "landscape":
+        from . import figures
         land = corpus.landscape(feats)
         figures.landscape_plot(feats, land, out / "landscape.png")
         sim = corpus.similarity(feats)

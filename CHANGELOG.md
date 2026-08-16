@@ -18,9 +18,63 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/); the
 >    musiscape 0.4.0, whose feature extraction imports the functions that
 >    moved.
 >
-> micromotion is deliberately unreleased --- a GitHub release publishes to
-> PyPI and cannot be undone --- so the chain is held at step 1 pending ARJ's
-> decision. Nothing here is broken for anyone working from the checkouts.
+> **Resolved 2026-08-16.** micromotion 1.12.2 is on PyPI, so step 1 is done
+> and musiscape is free to ship. ambiscape still goes last.
+
+
+## 0.6.0 — 2026-08-16
+
+### Added
+- **`musiscape.concert`: the songs inside a continuous recording.** The toolbox assumed one file is
+  one track, so a live set averaged a whole evening into a single key and a single tempo. `segment`
+  finds the songs first and writes one audio file per song plus a `songs.json` manifest; the folder
+  it writes is an ordinary collection that every other verb accepts. Songs are separated from
+  applause by **spectral flatness** rather than by level — an enthusiastic room is as loud as the
+  band — with the threshold taken from each recording's own bimodal distribution, guarded so that a
+  single-mode recording is not cut in half. A concert arriving as several camera files is one
+  concert: a span that runs to the end of one file and resumes at the start of the next is joined,
+  and the minimum-song test is applied after that join rather than before.
+- **Video containers** (`.mp4`, `.mov`, `.mkv`, `.m4v`, `.avi`, `.mts`, `.m2ts`) are accepted by
+  `segment`, decoded through ffmpeg, which is required only when such a file is actually handed
+  over. Collections stay audio-only.
+- `--min-song` and `--min-gap` on the command line.
+- **`musiscape.stability`: whether an estimate held, not just what it averaged to.** `features`'
+  two gates are whole-track averages, which catches a descriptor measuring noise but cannot tell
+  that from one measuring four minutes of real music at too long a timescale. On live material the
+  second case is the common one. `key_agreement`, `key_windowed`, `tempo_agreement` and
+  `tempo_windowed_bpm` now travel beside the gated numbers in `features.json`, computed from the
+  chromagram and onset envelope extraction already has in hand.
+- **`figures`: labelled chromagram and tempogram per track**, at any `--width` (default 1920 px).
+  The thumbnail cards stay unlabelled — they are for browsing; these are for reading numbers off.
+- **`pdf`: a summary table of every track's estimates, then a page of figures per track.** Written
+  with matplotlib's `PdfPages`, so no new dependency.
+
+### Not added, deliberately
+- **No single-number "is there a pulse" descriptor.** Two were implemented and measured against a
+  real concert. Beat salience scored 1.58–1.93 on the songs and 1.50–1.67 on the applause between
+  them; tempogram peak prominence scored 1.09–1.62 against 1.07–1.24. Both separate synthetic
+  extremes cleanly and neither separates the real thing, because applause is itself rhythmic. An
+  inter-beat regularity number failed earlier and more simply: `beat_track` fits one global grid, so
+  its intervals cannot move when the tempo does. The reasoning is kept in `musiscape.stability` so
+  the next person does not spend the afternoon rediscovering it.
+
+### Fixed
+- **`thumbnails` no longer dies on a collection whose audio sits in the root folder.** That album is
+  named `"."`, and `"." + ".png"` is `..png` — a name Path reads as a dotfile with no suffix, so PIL
+  could not infer a format and refused to save the contact sheet, losing the run after every card
+  had been rendered. The README's own quickstart produces this album.
+
+### Changed
+- `cli` imports matplotlib lazily, at the verbs that plot. `segment` has no figures to draw and
+  should not pay for the import.
+- `feats_2hz` moves from `thumbnails` to `features`, and the album-name-to-filename rule from
+  `thumbnails` to `io`. `sonic` reached into the plotting module for both, so an audio-only verb
+  pulled in matplotlib — and pulled it in late, inside a process that had already loaded the audio
+  stack, which on at least one machine segfaulted.
+
+### Fixed
+- **`sonic`'s medley for the root album is no longer a hidden file.** It was named `. medley.wav`,
+  invisible on every Unix desktop.
 
 
 ## 0.5.0 — 2026-08-12

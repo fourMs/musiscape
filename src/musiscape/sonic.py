@@ -19,7 +19,7 @@ from pathlib import Path
 
 import numpy as np
 
-from .io import Collection, Track, load
+from .io import Collection, Track, album_stem, load
 
 SEG_S = 4.0        #: seconds per selected segment
 FADE_S = 0.3       #: crossfade length
@@ -29,8 +29,8 @@ STEP_S = 1.0       #: candidate-window hop
 def _select_segments(y, sr, n_segments=3, seg_s=SEG_S):
     """Segment start times (s), chosen for representativeness, climax
     and contrast, returned in chronological order."""
-    from .thumbnails import _feats_2hz
-    C, M, rms = _feats_2hz(y, sr)
+    from .features import feats_2hz
+    C, M, rms = feats_2hz(y, sr)
     F = np.vstack([C, M / (np.abs(M).max() + 1e-9),
                    rms[None, :] / (rms.max() + 1e-9)])
     Fn = F / (np.linalg.norm(F, axis=0, keepdims=True) + 1e-9)
@@ -128,6 +128,6 @@ def export_collection(coll: Collection, out_dir: str | Path,
             if f.exists():
                 parts += [sf.read(f, dtype="float32")[0], gap]
         if parts:
-            sf.write(out_dir / f"{a.name.replace('/', '_')} medley.wav",
+            sf.write(out_dir / f"{album_stem(a.name)} medley.wav",
                      np.concatenate(parts[:-1]), sr)
     return out_dir

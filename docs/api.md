@@ -4,9 +4,17 @@
 
 ::: musiscape.io
 
+## Concerts & long recordings
+
+::: musiscape.concert
+
 ## Feature extraction
 
 ::: musiscape.features
+
+## Estimate stability
+
+::: musiscape.stability
 
 ## Corpus statistics
 
@@ -31,6 +39,10 @@
 ## Report
 
 ::: musiscape.report
+
+## PDF report
+
+::: musiscape.pdfreport
 
 ## Command line
 

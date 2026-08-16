@@ -113,3 +113,129 @@ def affinity_plot(affinity: dict, out_path: str | Path, title: str = ""):
     fig.tight_layout()
     fig.savefig(out_path)
     plt.close(fig)
+
+
+# --------------------------------------------------------------------------
+# Per-track analysis figures.
+#
+# The thumbnail cards in :mod:`thumbnails` are deliberately unlabelled: they
+# are for browsing a collection, where axes would be noise at card size.
+# These are the other thing --- figures you read numbers off --- so every
+# axis carries its unit and time runs in mm:ss rather than in seconds,
+# because a four-minute song on a seconds axis cannot be read.
+
+#: Pitch-class names, bottom to top on a chromagram's y axis.
+PITCH_CLASSES = ("C", "C#", "D", "D#", "E", "F",
+                 "F#", "G", "G#", "A", "A#", "B")
+
+#: Tempo range drawn, in BPM. Outside this the tempogram is metrical
+#: aliasing rather than anything anyone taps to.
+BPM_RANGE = (30.0, 300.0)
+
+
+def _mmss(x, _pos=None):
+    """Tick formatter: seconds → ``m:ss``."""
+    x = max(0.0, float(x))
+    return f"{int(x // 60)}:{int(x % 60):02d}"
+
+
+def _time_axis(ax, label="time (m:ss)"):
+    from matplotlib.ticker import FuncFormatter
+    ax.xaxis.set_major_formatter(FuncFormatter(_mmss))
+    ax.set_xlabel(label, color=MUT, fontsize=9)
+
+
+def draw_tempogram(ax, y, sr, hop: int = 512, mark_bpm: float | None = None):
+    """Autocorrelation tempogram onto ``ax``, labelled in BPM.
+
+    Bright horizontal bands are the periodicities the onsets actually hold:
+    a band that stays level across the whole width is a steady tempo, and
+    one that bends is a band speeding up or slowing down. A tempo is drawn
+    over it as a dashed line so the two can be compared.
+
+    ``mark_bpm`` sets which tempo that line shows; the default is this
+    figure's own estimate. Callers that quote a tempo elsewhere on the page
+    should pass theirs, because the two are computed from different onset
+    envelopes and a page that shows one number in its header and another on
+    its plot contradicts itself.
+    """
+    from . import music as amusic
+    times, bpm, T, t_est = amusic.tempogram(y, sr, hop=hop)
+    keep = (bpm >= BPM_RANGE[0]) & (bpm <= BPM_RANGE[1])
+    b = bpm[keep]
+    im = ax.pcolormesh(times, b, T[keep], shading="auto", cmap="magma",
+                       rasterized=True)
+    t_est = float(mark_bpm) if mark_bpm else t_est
+    ax.axhline(t_est, color="#ffffff", ls="--", lw=1.0, alpha=0.8)
+    ax.text(times[-1], t_est, f" {t_est:.0f} BPM ", color="#ffffff",
+            fontsize=8, va="center", ha="right",
+            bbox=dict(fc="#00000066", ec="none", pad=1.5))
+    # A log tempo axis spaces the musically-equal steps equally --- 60 to
+    # 120 is the same distance as 120 to 240 --- but its automatic ticks
+    # label the axis "3 x 10^2", which is the one thing a tempo axis must
+    # not say. Fixed BPM ticks, minor ticks off.
+    ax.set_yscale("log")
+    ticks = [40, 60, 80, 100, 120, 160, 200, 240]
+    ax.set_yticks(ticks)
+    ax.set_yticklabels([str(v) for v in ticks])
+    ax.minorticks_off()
+    ax.set_ylim(*BPM_RANGE)
+    ax.set_ylabel("tempo (BPM)", color=MUT, fontsize=9)
+    _time_axis(ax)
+    _style(ax)
+    return im
+
+
+def draw_chromagram(ax, y, sr, hop: int = 512):
+    """Chromagram onto ``ax``, labelled with the twelve pitch classes.
+
+    A tonal centre reads as one or two rows staying lit across the width;
+    a modulation moves that pattern bodily up or down the axis.
+    """
+    from . import music as amusic
+    times, C = amusic.chromagram(y, sr, hop=hop)
+    im = ax.pcolormesh(times, np.arange(13) - 0.5,
+                       np.vstack([C, C[-1:]]), shading="auto", cmap="magma",
+                       rasterized=True)
+    ax.set_yticks(np.arange(12))
+    ax.set_yticklabels(PITCH_CLASSES)
+    ax.set_ylim(-0.5, 11.5)
+    ax.set_ylabel("pitch class", color=MUT, fontsize=9)
+    _time_axis(ax)
+    _style(ax)
+    return im
+
+
+def _export(fig, out_path, width_px, height_px):
+    out_path = Path(out_path)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.set_size_inches(width_px / 100.0, height_px / 100.0)
+    fig.savefig(out_path, dpi=100, facecolor="white")
+    plt.close(fig)
+    return out_path
+
+
+def tempogram_plot(y, sr, out_path, width_px: int = 1920,
+                   height_px: int = 640, title: str = ""):
+    """Labelled tempogram → ``out_path``, exactly ``width_px`` wide."""
+    fig, ax = plt.subplots()
+    im = draw_tempogram(ax, y, sr)
+    fig.colorbar(im, ax=ax, pad=0.01).set_label("onset autocorrelation",
+                                                color=MUT, fontsize=8)
+    if title:
+        ax.set_title(title, color=INK, fontsize=11, loc="left")
+    fig.tight_layout()
+    return _export(fig, out_path, width_px, height_px)
+
+
+def chromagram_plot(y, sr, out_path, width_px: int = 1920,
+                    height_px: int = 640, title: str = ""):
+    """Labelled chromagram → ``out_path``, exactly ``width_px`` wide."""
+    fig, ax = plt.subplots()
+    im = draw_chromagram(ax, y, sr)
+    fig.colorbar(im, ax=ax, pad=0.01).set_label("pitch-class energy",
+                                                color=MUT, fontsize=8)
+    if title:
+        ax.set_title(title, color=INK, fontsize=11, loc="left")
+    fig.tight_layout()
+    return _export(fig, out_path, width_px, height_px)
