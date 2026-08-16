@@ -22,6 +22,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/); the
 > and musiscape is free to ship. ambiscape still goes last.
 
 
+## 0.7.2 — 2026-08-16
+
+### Fixed
+- **The concert clock no longer drifts.** Frames were pooled by a rounded number of STFT hops, so at
+  22.05 kHz with a 512 hop a "one second" frame was really 43 hops, or 0.99846 s. Every reported
+  time therefore ran about 0.15 % late: two seconds by the end of a 23-minute camera file, four and
+  a half across a 53-minute concert. It was enough for a span to end after the file it named, which
+  made `songs.json` claim a length the clip beside it did not have, and it put every exported
+  filename's timestamp progressively late. Pooling boundaries now come from time rather than from an
+  accumulated frame count, and the frame count from the audio's real duration.
+
+
 ## 0.7.1 — 2026-08-16
 
 ### Changed

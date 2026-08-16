@@ -58,6 +58,31 @@ def _otsu(x: np.ndarray, bins: int = 128) -> tuple[float, float, float]:
     return float(edges[i + 1]), float(m0[i]), float(m1[i])
 
 
+def _pool_slices(n_samples: int, sr: int, hop: int, hop_s: float,
+                 n_frames: int):
+    """One slice of STFT frames per ``hop_s`` of audio, on a true clock.
+
+    Pooling a *rounded* number of frames is the obvious way to do this and
+    it makes the clock drift. At 22.05 kHz with a 512 hop, one second is
+    43.07 hops; rounding to 43 makes each pooled frame 0.99846 s while the
+    caller is told it is 1.0 s, so every reported time runs 0.15 % late.
+    That is two seconds by the end of a 23-minute camera file, which is
+    enough for a span to end after the file it names.
+
+    Boundaries are therefore computed from time rather than accumulated,
+    and the count comes from the audio's real duration.
+    """
+    m = int(n_samples / sr / hop_s)
+    if m <= 0 or n_frames <= 0:
+        return 0, []
+    out = []
+    for i in range(m):
+        a = min(int(round(i * hop_s * sr / hop)), n_frames - 1)
+        b = min(max(int(round((i + 1) * hop_s * sr / hop)), a + 1), n_frames)
+        out.append(slice(a, b))
+    return m, out
+
+
 def music_mask(y: np.ndarray, sr: int, hop_s: float = 1.0) -> np.ndarray:
     """Per-``hop_s`` boolean: is this frame played music?
 
@@ -75,14 +100,12 @@ def music_mask(y: np.ndarray, sr: int, hop_s: float = 1.0) -> np.ndarray:
     flat = librosa.feature.spectral_flatness(S=S)[0]
     rms = librosa.feature.rms(S=S)[0]
 
-    n = max(1, int(round(hop_s * sr / hop)))
-    m = len(flat) // n
+    m, sl = _pool_slices(len(y), sr, hop, hop_s, len(flat))
     if m == 0:
         return np.zeros(0, dtype=bool)
-    logflat = np.array([np.log10(flat[i * n:(i + 1) * n].mean() + 1e-12)
-                        for i in range(m)])
+    logflat = np.array([np.log10(flat[s].mean() + 1e-12) for s in sl])
     db = librosa.amplitude_to_db(
-        np.array([rms[i * n:(i + 1) * n].mean() for i in range(m)]) + 1e-12)
+        np.array([rms[s].mean() for s in sl]) + 1e-12)
 
     loud = db > np.percentile(db, 95) - LEVEL_FLOOR_DB
     cut, lo, hi = _otsu(logflat)
@@ -288,12 +311,10 @@ def region_features(y: np.ndarray, sr: int, hop_s: float = 1.0) -> dict:
     rms = librosa.feature.rms(S=S)[0]
     cent = librosa.feature.spectral_centroid(S=S, sr=sr)[0]
 
-    n = max(1, int(round(hop_s * sr / hop)))
-    m = len(flat) // n
+    m, sl = _pool_slices(len(y), sr, hop, hop_s, len(flat))
     if m == 0:
         return {k: np.zeros(0) for k in
                 ("db", "flatness", "flat_var", "centroid")}
-    sl = [slice(i * n, (i + 1) * n) for i in range(m)]
     return {
         "db": librosa.amplitude_to_db(
             np.array([rms[s].mean() for s in sl]) + 1e-12),
