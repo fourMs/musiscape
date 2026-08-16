@@ -22,6 +22,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/); the
 > and musiscape is free to ship. ambiscape still goes last.
 
 
+## 0.7.1 — 2026-08-16
+
+### Changed
+- The concert timeline carries its class colours on the waveform itself rather than in a separate
+  ribbon above it. One lane shows both what happened and how loud it was, so an applause swell dying
+  away looks different from a block saying only that applause occurred.
+
+
 ## 0.7.0 — 2026-08-16
 
 ### Added

@@ -98,13 +98,13 @@ obvious.
 
 ## The timeline
 
-`segment` also labels every second of the recording and draws it as a ribbon, so a whole evening
-fits on one strip:
+`segment` also labels every second of the recording and draws it as one waveform, coloured by what
+was happening, so a whole evening fits on one strip:
 
 ```
 analysis/
   regions.json            every span, labelled
-  timeline.png            the ribbon, at --width pixels
+  timeline.png            the coloured waveform, at --width pixels
 ```
 
 Five labels are used. `music` comes from the setlist, so the ribbon and the song listing always
@@ -122,6 +122,10 @@ one song is drawn as three. The rest is decided frame by frame:
 `other` is worth reading as a real answer rather than a leftover. It marks the places where the
 material is genuinely ambiguous, which on a concert recording is usually a song ending, or a stage
 being reset.
+
+The colour sits on the waveform rather than in a separate band above it, so one lane carries both
+what happened and how loud it was. An applause swell dying away looks different from a block saying
+only that applause occurred.
 
 These thresholds were calibrated on one 53-minute concert recorded to a camera's built-in
 microphone; the measurements behind them are in the source, and they are module constants so they

@@ -184,3 +184,33 @@ def test_concert_timeline_time_axis_is_minutes_and_seconds():
     ticks = [t.get_text() for t in ax.get_xticklabels() if t.get_text()]
     assert any(":" in t for t in ticks), ticks
     plt.close(fig)
+
+
+def test_timeline_colours_the_waveform_itself_when_a_level_is_given():
+    """One lane, not two: the class colour belongs on the waveform rather
+    than in a separate ribbon above it."""
+    level = np.linspace(-40, -20, 700)
+    fig, ax = plt.subplots()
+    figures.draw_concert_timeline(ax, SPANS, 700.0, level=level)
+
+    filled = ax.collections
+    assert len(filled) == len(SPANS), \
+        f"expected one filled band per span, got {len(filled)}"
+    used = {tuple(np.round(c.get_facecolor()[0][:3], 3)) for c in filled}
+    import matplotlib.colors as mc
+    want = {tuple(np.round(mc.to_rgb(figures.REGION_COLORS[s["label"]]), 3))
+            for s in SPANS}
+    assert used == want
+    plt.close(fig)
+
+
+def test_timeline_waveform_is_symmetric_about_zero():
+    """It should read as a waveform, not as a bar chart hanging off an
+    axis."""
+    level = np.linspace(-40, -20, 700)
+    fig, ax = plt.subplots()
+    figures.draw_concert_timeline(ax, SPANS, 700.0, level=level)
+
+    lo, hi = ax.get_ylim()
+    assert lo == pytest.approx(-hi, rel=0.02)
+    plt.close(fig)

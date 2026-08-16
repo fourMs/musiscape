@@ -255,30 +255,44 @@ REGION_COLORS = {
 
 
 def draw_concert_timeline(ax, spans, total_s: float, level=None):
-    """Labelled ribbon of a concert's regions onto ``ax``.
+    """Labelled timeline of a concert's regions onto ``ax``.
 
-    ``spans`` is what :func:`musiscape.concert.regions` returns. ``level``,
-    if given, is a per-second dB array drawn underneath, which is what shows
-    an applause swell dying away where the ribbon only shows a block.
+    ``spans`` is what :func:`musiscape.concert.regions` returns. With
+    ``level``, a per-second dB array, the class colour is carried by the
+    waveform itself rather than by a separate ribbon: one lane reads faster,
+    and it shows an applause swell dying away where a block only shows that
+    applause happened. Without a level, spans are drawn as plain blocks.
 
     The legend names only the classes that occur, since an entry for a class
     that never happens invites the reader to hunt for it.
     """
-    seen = []
-    for s in spans:
-        lab = s["label"]
-        ax.axvspan(s["start_s"], s["end_s"], 0.42, 1.0,
-                   color=REGION_COLORS.get(lab, REGION_COLORS["other"]),
-                   linewidth=0)
-        if lab not in seen:
-            seen.append(lab)
+    seen = [s["label"] for s in spans]
+    seen = [c for i, c in enumerate(seen) if c not in seen[:i]]
 
     if level is not None and len(level):
-        t = np.linspace(0, total_s, len(level))
-        lo, hi = np.percentile(level, 2), np.percentile(level, 98)
-        norm = np.clip((level - lo) / max(hi - lo, 1e-9), 0, 1)
-        ax.fill_between(t, 0.02, 0.02 + 0.34 * norm, color=MUT, alpha=0.55,
-                        linewidth=0)
+        lv = np.asarray(level, float)
+        t = np.linspace(0, total_s, len(lv))
+        lo, hi = np.percentile(lv, 2), np.percentile(lv, 98)
+        amp = np.clip((lv - lo) / max(hi - lo, 1e-9), 0, 1)
+        for span in spans:
+            # one sample of overlap each side, so neighbouring bands meet
+            m = (t >= span["start_s"]) & (t <= span["end_s"])
+            idx = np.flatnonzero(m)
+            if not len(idx):
+                continue
+            a = max(idx[0] - 1, 0)
+            b = min(idx[-1] + 2, len(t))
+            sl = slice(a, b)
+            ax.fill_between(
+                t[sl], -amp[sl], amp[sl], linewidth=0,
+                color=REGION_COLORS.get(span["label"], REGION_COLORS["other"]))
+        ax.set_ylim(-1.08, 1.08)
+    else:
+        for span in spans:
+            ax.axvspan(
+                span["start_s"], span["end_s"], 0.0, 1.0, linewidth=0,
+                color=REGION_COLORS.get(span["label"], REGION_COLORS["other"]))
+        ax.set_ylim(0, 1)
 
     from matplotlib.patches import Patch
     order = [c for c in REGION_COLORS if c in seen]
@@ -288,7 +302,6 @@ def draw_concert_timeline(ax, spans, total_s: float, level=None):
               frameon=False, fontsize=9)
 
     ax.set_xlim(0, total_s)
-    ax.set_ylim(0, 1)
     ax.set_yticks([])
     _time_axis(ax, "concert time (m:ss)")
     for side in ("top", "right", "left"):
@@ -299,7 +312,7 @@ def draw_concert_timeline(ax, spans, total_s: float, level=None):
 
 
 def concert_timeline(spans, total_s: float, out_path, width_px: int = 1920,
-                     height_px: int = 340, title: str = "", level=None):
+                     height_px: int = 300, title: str = "", level=None):
     """Concert timeline → ``out_path``, exactly ``width_px`` wide."""
     fig, ax = plt.subplots()
     draw_concert_timeline(ax, spans, total_s, level=level)
