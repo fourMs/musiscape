@@ -765,6 +765,18 @@ def contact_sheet(paths: list[Path], out_path: str | Path, cols: int = 3):
     return Path(out_path)
 
 
+def _sheet_stem(album: str) -> str:
+    """Filename stem for an album's contact sheet.
+
+    Audio sitting in the collection root forms the album ``"."``, and
+    ``"." + ".png"`` is ``..png``---a name Path reads as a dotfile with no
+    suffix, which PIL then refuses to save, taking the whole run with it.
+    Leading dots go for that reason rather than for tidiness.
+    """
+    stem = album.replace("/", "_").lstrip(".")
+    return stem or "collection"
+
+
 def render_collection(coll: Collection, out_dir: str | Path,
                       notes: dict | None = None, workers: int = 4,
                       style: str = "mel") -> Path:
@@ -787,7 +799,7 @@ def render_collection(coll: Collection, out_dir: str | Path,
         paths = [out_dir / a.name / f"{t.title}.png" for t in a.tracks]
         paths = [p for p in paths if p.exists()]
         if paths:
-            contact_sheet(paths, out_dir / f"{a.name.replace('/', '_')}.png")
+            contact_sheet(paths, out_dir / f"{_sheet_stem(a.name)}.png")
     return out_dir
 
 
