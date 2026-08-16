@@ -1,4 +1,4 @@
-# Musiscape
+# musiscape
 
 [![CI](https://github.com/fourMs/musiscape/actions/workflows/ci.yml/badge.svg)](https://github.com/fourMs/musiscape/actions/workflows/ci.yml)
 [![docs](https://github.com/fourMs/musiscape/actions/workflows/docs.yml/badge.svg)](https://fourms.github.io/musiscape/)
@@ -7,7 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21948999.svg)](https://doi.org/10.5281/zenodo.21948999)
 
-Musiscape is a Python toolbox that analyses a folder tree of music as a
+musiscape is a Python toolbox that analyses a folder tree of music as a
 collection: albums, similarity, outliers, categories. Point it at a folder
 of audio files—each subfolder counts as an album—and it renders figures,
 tables and thumbnails that let you compare many tracks at a glance.
@@ -78,7 +78,7 @@ computed in another.
 
 ## Licence and credit
 
-MIT licence. Musiscape is developed as part of the
+MIT licence. musiscape is developed as part of the
 [AMBIENT](https://www.uio.no/ritmo/english/projects/ambient/) project at
 [RITMO Centre for Interdisciplinary Studies in Rhythm, Time and
 Motion](https://www.uio.no/ritmo/english/), University of Oslo.
