@@ -5,7 +5,7 @@
 [![PyPI version](https://img.shields.io/pypi/v/musiscape)](https://pypi.org/project/musiscape/)
 [![Python](https://img.shields.io/pypi/pyversions/musiscape.svg)](https://pypi.org/project/musiscape/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21948999.svg)](https://doi.org/10.5281/zenodo.21948999)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21964192.svg)](https://doi.org/10.5281/zenodo.21964192)
 
 A Python toolbox for analysing large music collections and long music
 recordings.
@@ -112,9 +112,9 @@ Motion](https://www.uio.no/ritmo/english/), University of Oslo.
 Cite the concept DOI, which always resolves to the newest version:
 
 > Jensenius, A. R. (2026). *musiscape: A Python toolbox for analysing large music collections and
-> long music recordings* [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.21948999
+> long music recordings* [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.21964192
 
 Where the exact behaviour matters, add the version you ran. Every release has its own DOI, listed
-on the [Zenodo record](https://doi.org/10.5281/zenodo.21948999).
+on the [Zenodo record](https://doi.org/10.5281/zenodo.21964192).
 
 `CITATION.cff` in this repository carries the same information in machine-readable form.

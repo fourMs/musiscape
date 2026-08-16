@@ -56,7 +56,7 @@ card as a draft for listening, not a verdict.
 ## Citing
 
 Jensenius, A. R. (2026). *musiscape: A Python toolbox for analysing large music collections and
-long music recordings* [Computer software]. Zenodo. <https://doi.org/10.5281/zenodo.21948999>
+long music recordings* [Computer software]. Zenodo. <https://doi.org/10.5281/zenodo.21964192>
 
 That is the concept DOI and it always resolves to the newest version. Where the exact behaviour
 matters, add the version you ran; every release has its own DOI, listed on the Zenodo record.
