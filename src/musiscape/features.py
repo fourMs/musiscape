@@ -53,9 +53,10 @@ on seven of eight songs, all eight of which had an audible beat.
 reports how far the windows agree, which separates the cases. Its results
 travel beside the gated numbers here --- ``key_agreement`` and
 ``key_windowed`` beside ``key``, ``tempo_agreement`` and
-``tempo_windowed_bpm`` beside ``tempo_bpm``, and ``beat_salience``, which
-asks whether the tracked beats land on real onsets and so answers "is there
-a pulse" where ``pulse_R`` answers "is there one unchanging pulse".
+``tempo_windowed_bpm`` beside ``tempo_bpm``. It answers "does this estimate
+hold still across the track", which is answerable; it does not attempt "is
+there a pulse at all", which on real material it could not answer --- see
+that module for the two measures tried and why applause defeats both.
 """
 from __future__ import annotations
 
@@ -180,7 +181,6 @@ def extract_track(y: np.ndarray, sr: int) -> dict:
         "key_windows": ks["n_windows"],
         "tempo_windowed_bpm": ts["tempo_bpm"],
         "tempo_agreement": ts["agreement"],
-        "beat_salience": ts["beat_salience"],
         "fifths_center": fifths["center_note"],
         "fifths_R": fifths["R"],
         "tartyp": tartyp["dist"],

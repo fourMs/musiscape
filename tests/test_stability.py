@@ -104,34 +104,20 @@ def test_tempo_stability_falls_when_the_tempo_steps_mid_track():
     assert stepped["agreement"] < steady["agreement"]
 
 
-def test_beat_salience_separates_a_pulse_from_no_pulse():
-    """The gate for "is there a beat at all".
+def test_tempo_stability_still_reports_a_tempo_under_drift():
+    """Drift is not absence of tempo.
 
-    A beat tracker returns a grid for anything, white noise included. What
-    tells the cases apart is whether that grid lands on real onsets.
-    """
-    rng = np.random.default_rng(0)
-    noise = 0.2 * rng.standard_normal(int(60 * SR))
-
-    pulsed = stability.tempo_stability(_env(_clicks(60.0, 120.0)), SR)
-    unpulsed = stability.tempo_stability(_env(noise), SR)
-
-    assert unpulsed["beat_salience"] < 2.0, "noise must not look pulsed"
-    assert pulsed["beat_salience"] > 3.0, "a click train must look pulsed"
-
-
-def test_tempo_stability_survives_drift_that_defeats_a_global_period():
-    """The case this module exists for: a steady beat that speeds up.
-
-    ``pulse_R`` folds the whole take at one period and collapses; beat
-    salience is local and does not.
+    ``pulse_R`` folds the whole take at one period and collapses here. The
+    windowed estimate still lands on the right number; what it loses is
+    agreement, which is the honest thing to lose.
     """
     drifting = _env(np.concatenate([_clicks(20.0, 116.0), _clicks(20.0, 120.0),
                                     _clicks(20.0, 124.0)]))
 
     res = stability.tempo_stability(drifting, SR, win_s=20.0)
 
-    assert res["beat_salience"] > 3.0, "drift is not absence of pulse"
+    assert res["tempo_bpm"] == pytest.approx(120.0, rel=0.08)
+    assert res["n_windows"] == 3
 
 
 # --------------------------------------------------------------------------
@@ -148,5 +134,4 @@ def test_extract_track_reports_the_stability_of_its_own_estimates():
 
     assert feat["key_agreement"] == pytest.approx(1.0)
     assert feat["key_windows"] >= 2
-    assert feat["beat_salience"] > 3.0
     assert feat["tempo_agreement"] is not None

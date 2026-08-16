@@ -13,15 +13,39 @@ collapses the resultant while playing a perfectly steady beat.
 ``chroma_entropy`` averages chroma over the whole take, and a full band in
 a reverberant room flattens that average far past the threshold calibrated
 on solo instrumental material. On a concert measured with these functions,
-seven of eight songs failed both gates while their beats landed squarely on
-real onsets, and seven of eight windowed key estimates agreed with the
-whole-song one.
+seven of eight songs failed both gates, and seven of eight windowed key
+estimates nonetheless agreed with the whole-song one.
 
 So this module measures the same two quantities *per window* and reports
 how much the windows agree. High agreement on a gated track means the gate
 was too coarse, not that the track is tonal or pulsed by luck. Low
 agreement means the track really does wander --- which is itself worth
 knowing, and is a different statement from "unmeasurable".
+
+**A single-number pulse gate was attempted twice and abandoned, and that is
+a result worth recording rather than a gap.**
+
+Inter-beat regularity fails first. ``beat_track`` fits one global grid, so
+its intervals stay even through a tempo change: a 120 BPM click train and a
+120-then-80 train both come back with beats 0.5 s apart, differing only by
+hop quantisation. The number cannot move.
+
+Beat salience --- onset strength at the tracked beats over the track mean
+--- fails second, and more instructively. It looks decisive on synthetic
+material (about 1.2 on white noise, above 13 on a click train) and does not
+survive contact with a real room: across one concert the songs measured
+1.58--1.93 and the applause between them 1.67, with room tone at 1.50.
+Tempogram peak prominence does better and still overlaps: songs 1.09--1.62
+against 1.07--1.24 for applause and room tone.
+
+The reason is not a defective measure. **Applause is rhythmic.** A room
+clapping in near-unison has a periodic onset envelope, and no statistic of
+periodicity alone will separate it from a band. Sorting the two is what
+:mod:`musiscape.concert` uses spectral flatness for, and on a single track
+the honest answer is the tempogram figure read by eye.
+
+What is reported here is therefore the narrower question that can be
+answered: not "is there a pulse" but "does the tempo estimate hold still".
 
 Both functions take features already computed elsewhere (a chromagram, an
 onset envelope) rather than audio, so adding them to an extraction costs
@@ -73,28 +97,16 @@ def key_stability(chroma: np.ndarray, sr: int, hop: int = 512,
 
 def tempo_stability(onset_env: np.ndarray, sr: int, hop: int = 512,
                     win_s: float = WIN_S, tol: float = TEMPO_TOL) -> dict:
-    """Tempo per window, their agreement, and the beat regularity.
+    """Tempo per window, and how often the windows agree.
 
     ``onset_env`` is an onset-strength envelope. Returns the median
-    windowed tempo, the share of windows within ``tol`` of it, the number
-    of windows, and ``beat_salience``.
+    windowed tempo, the share of windows within ``tol`` of it, and the
+    number of windows.
 
-    ``beat_salience`` is the answer to "is there a beat at all": the mean
-    onset strength at the tracked beats over the mean across the track. A
-    beat tracker returns a grid for any input, white noise included, so
-    what separates the cases is whether that grid lands on anything. Around
-    1 the beats fall on nothing in particular and there is no pulse; a
-    click train measures above 10. It survives tempo drift because it asks
-    a *local* question, which is exactly where ``pulse_R``---one global
-    period folded over the whole take---collapses.
-
-    The spacing of those beats is not reported, and deliberately.
-    ``beat_track`` fits one global grid, so its inter-beat intervals stay
-    even through a tempo change: a 120 BPM click train and a 120-then-80
-    train both come back with beats 0.5 s apart, differing only by hop
-    quantisation. An interval-regularity number would look like a measure
-    of steadiness while being unable to move. Window ``agreement`` is what
-    sees a tempo change.
+    What is *not* returned is any single number answering "is there a beat
+    at all", because two candidates were tried against real material and
+    both failed. See the module docstring: the honest answer on a concert
+    recording is the tempogram figure, read by eye.
 
     Windowed tempos are folded by metrical octave before being compared. A
     window heard at double or half time agrees about where the beat is, and
@@ -119,16 +131,6 @@ def tempo_stability(onset_env: np.ndarray, sr: int, hop: int = 512,
     tmed = float(np.median(folded))
     agree = float(np.mean(np.abs(folded - tmed) / max(tmed, 1e-9) < tol))
 
-    _, frames = librosa.beat.beat_track(onset_envelope=env, sr=sr,
-                                        hop_length=hop)
-    frames = np.asarray(frames, int)
-    frames = frames[(frames >= 0) & (frames < len(env))]
-    mean_env = float(env.mean())
-    salience = (float(env[frames].mean() / mean_env)
-                if len(frames) and mean_env > 0 else None)
-
     return {"tempo_bpm": round(tmed, 1),
             "agreement": round(agree, 3) if m > 1 else None,
-            "n_windows": m,
-            "beat_salience": round(salience, 2)
-            if salience is not None else None}
+            "n_windows": m}

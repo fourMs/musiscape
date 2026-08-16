@@ -22,7 +22,7 @@ def main(argv=None):
     p.add_argument("verb", choices=["probe", "extract", "fingerprint",
                                     "landscape", "categorize", "report",
                                     "thumbnails", "poster", "sonic",
-                                    "segment"])
+                                    "segment", "figures", "pdf"])
     p.add_argument("folder", help="collection root (albums = subfolders); "
                                   "for segment, a folder of recordings")
     p.add_argument("-o", "--out", help="output folder (default <root>/analysis)")
@@ -37,6 +37,8 @@ def main(argv=None):
                    help="segment: shortest span counted as a song (s)")
     p.add_argument("--min-gap", type=float, default=8.0,
                    help="segment: shortest silence that ends a song (s)")
+    p.add_argument("--width", type=int, default=1920,
+                   help="figures: export width in pixels (default 1920)")
     args = p.parse_args(argv)
 
     # segment runs before the collection is opened: a folder of camera
@@ -87,6 +89,27 @@ def main(argv=None):
         print(thumbnails.render_collection(coll, out, notes=notes,
                                            workers=args.workers,
                                            style=args.style))
+        return
+
+    if args.verb == "figures":
+        from . import figures as afig
+        from .io import load
+        fdir = out / "figures"
+        for t in coll.tracks:
+            y, sr = load(t, duration=args.duration)
+            stem = f"{t.album.replace('/', '_')}_{t.title}".lstrip("._")
+            afig.chromagram_plot(y, sr, fdir / f"{stem} chromagram.png",
+                                 width_px=args.width, title=t.title)
+            afig.tempogram_plot(y, sr, fdir / f"{stem} tempogram.png",
+                                width_px=args.width, title=t.title)
+            print(f"[{t.album}] {t.title}", flush=True)
+        print(fdir)
+        return
+
+    if args.verb == "pdf":
+        from . import pdfreport
+        print(pdfreport.build(coll, out, workers=args.workers,
+                              duration=args.duration))
         return
 
     if args.verb == "probe":
