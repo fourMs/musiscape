@@ -35,8 +35,8 @@ exists for exactly that and caught it.
 import importlib
 
 _SUBMODULES = (
-    "categorize", "concert", "corpus", "features", "figures", "io", "music",
-    "report", "sonic", "stability", "thumbnails",
+    "categorize", "concert", "corpus", "examples", "features", "figures", "io",
+    "music", "report", "sonic", "stability", "thumbnails",
 )
 # Convenience verbs, mapped to the module that owns each. Same laziness, same reason.
 _VERBS = {

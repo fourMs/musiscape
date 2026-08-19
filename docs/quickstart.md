@@ -1,5 +1,31 @@
 # Quickstart
 
+## Run something now, with no music of your own
+
+Everything below points at `~/Music/my-collection`, which is a folder you may not have.
+This builds one you do:
+
+```python
+import musiscape as ms
+
+root = ms.examples.demo_collection("/tmp/demo")   # two albums, three tracks each
+```
+
+```bash
+musiscape report /tmp/demo
+```
+
+Two albums of synthetic tracks, one plucked and one drone, chosen so that the contrast
+the analysis is meant to find is genuinely there. About 1.3 MB. Every command on this
+page works against `/tmp/demo`, which makes it a good way to check an installation, or
+to see what a command produces before pointing it at real music.
+
+They are sine tones with envelopes, not music: useful for learning the tools, and not
+material for a claim about anything. The test suite builds its collection with the same
+function.
+
+## Collections
+
 A *collection* is simply a folder tree, where every subfolder holding audio
 files (wav/mp3/flac/ogg/m4a) becomes an album and every file a track. No
 metadata tags are required: the folder structure people already keep their

@@ -25,6 +25,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/); the
 ## 0.8.0 — 2026-08-19
 
 ### Added
+- `musiscape.examples`, so the documentation runs with no music of your own. Every guide
+  pointed at `~/Music/my-collection`, a folder the reader may not have and which certainly does
+  not hold what the text assumes. `examples.demo_collection(path)` writes two albums of three
+  synthetic tracks, plucked against drone, chosen so the contrast the analysis is meant to find
+  is genuinely there — about 1.3 MB, and every command in the guides works against it. The
+  generators are the ones `tests/conftest.py` already used; the fixture imports them now rather
+  than keeping its own copy, since a fixture that drifts from the shipped example tests
+  something no user can reproduce.
 - Every module named in the API reference is now reachable from `import musiscape`:
   `categorize`, `concert`, `corpus`, `features`, `figures`, `io`, `music`, `report`, `sonic`,
   `stability` and `thumbnails`, plus `open_collection`, `extract_collection`, `extract_track`
