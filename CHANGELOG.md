@@ -22,6 +22,25 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/); the
 > and musiscape is free to ship. ambiscape still goes last.
 
 
+## 0.8.0 — 2026-08-19
+
+### Added
+- Every module named in the API reference is now reachable from `import musiscape`:
+  `categorize`, `concert`, `corpus`, `features`, `figures`, `io`, `music`, `report`, `sonic`,
+  `stability` and `thumbnails`, plus `open_collection`, `extract_collection`, `extract_track`
+  and `load_features`. The package exported two names before this, so the documentation listed
+  eleven modules a reader following it could not see, and anyone scripting the toolbox rather
+  than driving its command line had to guess the import paths.
+- `__dir__`, so tab completion in a notebook lists the same names.
+
+### Changed
+- The submodules resolve LAZILY, on first attribute access, through PEP 562 `__getattr__`.
+  Importing them eagerly is the obvious way to write this and it is wrong: `figures` and
+  `thumbnails` pull in matplotlib, so a bare `import musiscape` would drag the plotting stack
+  into `musiscape sonic`, which needs none of it. That was not caught by review — the existing
+  `test_sonic_does_not_import_the_plotting_stack` failed the moment the eager version was
+  written, which is a test earning its keep.
+
 ## 0.7.3 — 2026-08-16
 
 ### Changed
