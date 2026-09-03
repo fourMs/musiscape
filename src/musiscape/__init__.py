@@ -35,8 +35,8 @@ exists for exactly that and caught it.
 import importlib
 
 _SUBMODULES = (
-    "categorize", "concert", "corpus", "examples", "features", "figures", "io",
-    "music", "report", "sonic", "stability", "thumbnails",
+    "categorize", "concert", "corpus", "examples", "features", "figures", "foreground", "io",
+    "music", "report", "sonic", "stability", "thumbnails", "timecourse",
 )
 # Convenience verbs, mapped to the module that owns each. Same laziness, same reason.
 _VERBS = {
@@ -44,6 +44,8 @@ _VERBS = {
     "extract_collection": "features",
     "extract_track": "features",
     "load_features": "features",
+    "music_timecourse": "timecourse",
+    "instrument_foreground": "foreground",
 }
 
 __all__ = [*_SUBMODULES, *_VERBS]
@@ -65,4 +67,4 @@ def __dir__():
     return sorted(__all__)
 
 
-__version__ = "0.8.0"
+__version__ = "0.9.0"

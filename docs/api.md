@@ -12,6 +12,14 @@
 
 ::: musiscape.features
 
+## Time-course of a recording
+
+::: musiscape.timecourse
+
+## Foreground proxies
+
+::: musiscape.foreground
+
 ## Estimate stability
 
 ::: musiscape.stability

@@ -22,9 +22,9 @@ def main(argv=None):
     p.add_argument("verb", choices=["probe", "extract", "fingerprint",
                                     "landscape", "categorize", "report",
                                     "thumbnails", "poster", "sonic",
-                                    "segment", "figures", "pdf"])
+                                    "segment", "figures", "pdf", "timecourse"])
     p.add_argument("folder", help="collection root (albums = subfolders); "
-                                  "for segment, a folder of recordings")
+                                  "for segment and timecourse, a folder of recordings")
     p.add_argument("-o", "--out", help="output folder (default <root>/analysis)")
     p.add_argument("--workers", type=int, default=4)
     p.add_argument("--duration", type=float,
@@ -40,6 +40,34 @@ def main(argv=None):
     p.add_argument("--width", type=int, default=1920,
                    help="figures: export width in pixels (default 1920)")
     args = p.parse_args(argv)
+
+    # timecourse also takes a folder of recordings: one CSV, one section table and three
+    # figures per file, at one row per second.
+    if args.verb == "timecourse":
+        import csv
+        from . import timecourse as tcm
+        from .io import list_recordings, load_recording
+        root = Path(args.folder).expanduser().resolve()
+        out = (Path(args.out) if args.out else root / "analysis").expanduser().resolve()
+        out.mkdir(parents=True, exist_ok=True)
+        for path in list_recordings(root, exclude=[out]):
+            y, sr = load_recording(path, sr=22050, duration=args.duration)
+            tc = tcm.music_timecourse(y, sr)
+            stem = path.stem
+            with open(out / f"{stem}_timecourse.csv", "w", newline="") as fh:
+                w = csv.writer(fh)
+                w.writerow(["t", "rms", "local_tempo_bpm", "pulse_clarity", "chroma_entropy", "tonal_clarity", "hcdf",
+                            "centroid", "flatness", "harmonic_ratio", "register_midi", "register_spread", "timbre_novelty"]
+                           + [f"chroma_{n}" for n in tcm.KEY_NAMES])
+                for i in range(len(tc["t"])):
+                    w.writerow([tc["t"][i], tc["rms"][i], tc["local_tempo"][i], tc["pulse_clarity"][i], tc["chroma_entropy"][i],
+                                tc["tonal_clarity"][i], tc["hcdf"][i], tc["centroid"][i], tc["flatness"][i], tc["harmonic_ratio"][i],
+                                tc["register_midi"][i], tc["register_spread"][i], tc["timbre_novelty"][i]] + list(tc["chroma"][:, i]))
+            with open(out / f"{stem}_keys.csv", "w", newline="") as fh:
+                w = csv.writer(fh); w.writerow(["t", "key", "r"]); w.writerows(tc["keys"])
+            tcm.timecourse_figures(tc, out, prefix=f"{stem}_", title=stem)
+            print(f"{stem}: {len(tc['t'])} s, keys {len(tc['keys'])} windows -> {out}")
+        return
 
     # segment runs before the collection is opened: a folder of camera
     # files holds no audio files at all, and open_collection would refuse

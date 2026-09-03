@@ -22,6 +22,24 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/); the
 > and musiscape is free to ship. ambiscape still goes last.
 
 
+## 0.9.0 — 2026-09-03
+
+### Added
+- `musiscape.timecourse`: the per-second time-course of a recording — chroma of the harmonic
+  component with entropy and clarity, windowed Krumhansl–Kessler keys, harmonic change (tonnetz
+  HCDF), tempogram with local tempo and pulse clarity, MFCC/centroid/flatness/harmonic share,
+  register as energy-weighted MIDI pitch with spread, and MFCC timbre novelty —
+  `music_timecourse(y, sr)`, folded per section by `section_summary` and drawn by
+  `timecourse_figures` (chromagram, tempogram, time-course, plus raw strips for a scrollable
+  page). Written for a 56-minute live-painting concert whose single whole-track key hid a music
+  of pedal points; a per-second view is what a long improvisation needs.
+- `musiscape.foreground`: proxies for which kind of sound is in front when there is no
+  multitrack — a *pitched* envelope (harmonic energy weighted by pYIN voicing), a *low* band and
+  a *noise* envelope — with `foreground_labels` giving one label per second only where one proxy
+  clearly leads. Proxies, not separation, and the docstring says so.
+- CLI verb `timecourse <folder>`: writes the time-course CSV and figures for every recording in a
+  folder.
+
 ## 0.8.0 — 2026-08-19
 
 ### Added
