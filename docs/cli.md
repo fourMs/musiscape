@@ -27,12 +27,13 @@ exist.
 | `segment` | finds the songs in a continuous concert recording, video included, labels every second of it, and exports the non-music spans for a soundscape toolbox | `songs.json`, `regions.json`, `timeline.png`, one audio file per song under `songs/`, and the rest under `other/` |
 | `figures` | labelled chromagram and tempogram per track --- the readable counterpart to the thumbnail cards | two PNGs per track under `figures/` |
 | `pdf` | summary table of every track's estimates, then a page of figures per track | `report.pdf` |
+| `timecourse` | the per-second time-course of every recording in a folder: chroma and windowed keys, harmonic change, tempogram with pulse clarity, timbre, register, timbre novelty | `<name>_timecourse.csv`, `<name>_keys.csv`, and the chromagram, tempogram and time-course figures with raw strips |
 
 `extract` runs first inside every verb that needs features, so the verbs above it in the table can
 be run on their own; `probe`, `thumbnails`, `poster` and `sonic` do not need `features.json` to
 exist, though `thumbnails` will use it if it is there.
 
-`segment` is the exception to the collection rule: it reads a folder of *recordings* rather than a
+`segment` and `timecourse` are the exceptions to the collection rule: they read a folder of *recordings* rather than a
 collection, because a folder of camera files holds no audio files at all. What it writes is a
 collection, which every other verb then accepts. See [Concerts & long recordings](guide/concerts.md).
 
