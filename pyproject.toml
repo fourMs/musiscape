@@ -25,6 +25,7 @@ dependencies = [
 
 [project.optional-dependencies]
 tags = ["mutagen>=1.46"]
+transcribe = ["piano_transcription_inference>=0.0.5"]
 
 [project.scripts]
 musiscape = "musiscape.cli:main"

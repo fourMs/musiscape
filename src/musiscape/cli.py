@@ -22,9 +22,9 @@ def main(argv=None):
     p.add_argument("verb", choices=["probe", "extract", "fingerprint",
                                     "landscape", "categorize", "report",
                                     "thumbnails", "poster", "sonic",
-                                    "segment", "figures", "pdf", "timecourse"])
+                                    "segment", "figures", "pdf", "timecourse", "transcribe"])
     p.add_argument("folder", help="collection root (albums = subfolders); "
-                                  "for segment and timecourse, a folder of recordings")
+                                  "for segment, timecourse and transcribe, a folder of recordings")
     p.add_argument("-o", "--out", help="output folder (default <root>/analysis)")
     p.add_argument("--workers", type=int, default=4)
     p.add_argument("--duration", type=float,
@@ -40,6 +40,26 @@ def main(argv=None):
     p.add_argument("--width", type=int, default=1920,
                    help="figures: export width in pixels (default 1920)")
     args = p.parse_args(argv)
+
+    # transcribe: piano note events per recording (optional extra), and the notes folded per second.
+    if args.verb == "transcribe":
+        import csv
+        from . import transcribe as trm
+        from .io import list_recordings, load_recording
+        root = Path(args.folder).expanduser().resolve()
+        out = (Path(args.out) if args.out else root / "analysis").expanduser().resolve()
+        out.mkdir(parents=True, exist_ok=True)
+        for path in list_recordings(root, exclude=[out]):
+            y, sr = load_recording(path, sr=trm.MODEL_SR, duration=args.duration)
+            notes = trm.transcribe_piano(y, sr, midi_path=str(out / f"{path.stem}_notes.mid"))
+            notes.to_csv(out / f"{path.stem}_notes.csv", index=False, float_format="%.4f")
+            per = trm.notes_per_second(notes, len(y) / sr)
+            with open(out / f"{path.stem}_notes_1hz.csv", "w", newline="") as fh:
+                w = csv.writer(fh); w.writerow(["t", "density", "pitch_mean", "velocity_mean", "pitch_spread", "sustain"])
+                for i in range(len(per["t"])):
+                    w.writerow([per["t"][i], per["density"][i], per["pitch_mean"][i], per["velocity_mean"][i], per["pitch_spread"][i], per["sustain"][i]])
+            print(f"{path.stem}: {len(notes)} notes, {len(notes) / (len(y) / sr / 60):.0f}/min -> {out}")
+        return
 
     # timecourse also takes a folder of recordings: one CSV, one section table and three
     # figures per file, at one row per second.

@@ -36,7 +36,7 @@ import importlib
 
 _SUBMODULES = (
     "categorize", "concert", "corpus", "examples", "features", "figures", "foreground", "io",
-    "music", "report", "sonic", "stability", "thumbnails", "timecourse",
+    "music", "report", "sonic", "stability", "thumbnails", "timecourse", "transcribe",
 )
 # Convenience verbs, mapped to the module that owns each. Same laziness, same reason.
 _VERBS = {
@@ -46,6 +46,7 @@ _VERBS = {
     "load_features": "features",
     "music_timecourse": "timecourse",
     "instrument_foreground": "foreground",
+    "transcribe_piano": "transcribe",
 }
 
 __all__ = [*_SUBMODULES, *_VERBS]

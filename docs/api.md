@@ -20,6 +20,10 @@
 
 ::: musiscape.foreground
 
+## Piano transcription
+
+::: musiscape.transcribe
+
 ## Estimate stability
 
 ::: musiscape.stability

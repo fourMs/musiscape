@@ -22,6 +22,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/); the
 > and musiscape is free to ship. ambiscape still goes last.
 
 
+## [Unreleased]
+
+### Added
+- `musiscape.transcribe`: piano transcription to note events (onset, offset, MIDI pitch,
+  velocity) with the high-resolution model of Kong et al. (2021), as an optional extra
+  `musiscape[transcribe]`; `notes_per_second` folds the notes onto the one-second clock
+  (density, mean pitch, mean velocity, pitch spread, notes sounding). Onsets from the signal
+  had merged chords and runs into single events — 32 to 83 per minute on a piano improvisation
+  where the transcription hears 58 to 300 — and the note onsets are what strokes and gestures
+  should be aligned to. CLI verb `transcribe <folder>`.
+
 ## 0.9.0 — 2026-09-03
 
 ### Added
