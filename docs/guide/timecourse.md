@@ -82,3 +82,28 @@ These are proxies, not a separation. On the live-painting concert they were writ
 pitched proxy followed the violin and the low and noise proxies the electronics, and that reading
 was checked against photographs and an AudioSet tagger before it was used. Check yours the same
 way. If stems exist, use them.
+
+## Notes, not onsets: `transcribe_piano`
+
+For a piano recording, an onset detector is a loss: it fires on attacks without saying how many
+notes, at what pitch, how loud. `musiscape.transcribe` transcribes the piano part to note events
+with the high-resolution model of Kong et al. (2021), as an optional extra:
+
+```bash
+pip install "musiscape[transcribe]"      # brings piano_transcription_inference and torch
+musiscape transcribe recordings/         # <name>_notes.csv, _notes.mid, _notes_1hz.csv
+```
+
+```python
+notes = ms.transcribe_piano(y, sr)        # onset_s, offset_s, midi, velocity per note
+per = ms.transcribe.notes_per_second(notes, duration_s=len(y) / sr)
+per["density"], per["pitch_mean"], per["velocity_mean"], per["pitch_spread"], per["sustain"]
+```
+
+The checkpoint (about 170 MB) downloads on first use; on a CPU the model runs at a few times real
+time. It is for piano, and for recordings the piano dominates: on a mixture it returns the notes
+it believes it hears. On a piano improvisation the signal's onset detector had found 32 to 83
+events per minute where the transcription hears 58 to 300, because chords and runs merge into
+single attacks; the note onsets are what strokes and gestures should be aligned to, and the
+per-second density, pitch and velocity are the piano's own time-course to lay beside the one
+above.
