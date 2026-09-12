@@ -199,3 +199,32 @@ instead.
 For a single track, read the tempogram. `musiscape figures --width 1920` draws it with a labelled
 BPM axis, where a bright band holding level across the width is a steady tempo and one that bends is
 a band speeding up or slowing down.
+
+
+## Segmenting from AudioSet tags (`--method panns`)
+
+The flatness classifier is cheap and was calibrated on one camera-mic concert; it
+hears loud rock as applause and noise music as "other". With `ambiscape[ml]`
+installed, `musiscape segment FOLDER --method panns --device auto` labels the
+evening from PANNs posteriors instead (`musiscape.tagging.segment_concert`), keeps
+the song finder for snapping the edges, and moves each piece's start back to
+where the sound begins. In Python:
+
+```python
+from musiscape import concert, tagging
+from musiscape.io import load_recording
+y, sr = load_recording("concert.mp4")
+songs = concert.find_songs(["concert.mp4"])
+res = tagging.segment_concert(y, sr, songs=songs, device="auto")
+res["spans"]          # music / applause / voices / quiet / other, contiguous
+```
+
+## Matching the setlist
+
+`musiscape segment FOLDER --setlist kjoreplan.docx` reads the running order
+(JSON list, or the first table of a `.docx` with Nr. / Innslag / Låt /
+Medvirkende columns) and writes `setlist.json`. With only the audio the match is
+by running order. Give `musiscape.setlist.align_setlist` the transcribed
+introduction before each piece (`{"id": ..., "intro": text}`) and it matches the
+names the host says, ignores the ones the host thanks, and reports the acts that
+never happened.

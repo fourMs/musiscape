@@ -22,6 +22,25 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/); the
 > and musiscape is free to ship. ambiscape still goes last.
 
 
+## 0.11.0 — 2026-09-12
+
+### Added
+- `musiscape.tagging`: concert segmentation from AudioSet posteriors (PANNs through
+  `ambiscape.ml.tag_frames`, extra `musiscape[tagging]`, needs ambiscape ≥ 0.50). Group max over
+  labels → weighted per-frame decision with a level gate → majority filter → run-length spans →
+  per-class minimum durations → `absorb_other` (loud non-speech beside music is the piece: noise
+  music, laptop sets) → `snap_to_songs` → `refine_music_onsets` (the start moves back to where the
+  sound begins, so a click on a piece does not land after the first note). Same span vocabulary as
+  `concert`, so the timeline and exports work unchanged. `concert.map_regions(..., method="panns")`
+  and `musiscape segment --method panns [--device auto]` expose it. On a 9-act IMV concert it found
+  all 9 pieces where the flatness heuristic found 7 and read the rock set as applause.
+- `musiscape.setlist`: `load_setlist` (JSON list, or the first table of a `.docx` running order such
+  as the IMV kjøreplan), `align_setlist` (names in the spoken introductions fuzzy-matched to acts,
+  thank-yous to the previous act ignored, "vær så god X" / "ved X" counted extra, leftovers placed
+  by running order or continued from the previous act, unmatched acts reported as `not_detected`)
+  and `act_title`. `musiscape segment --setlist plan.docx` writes `setlist.json`; without
+  transcripts the alignment is by running order alone.
+
 ## 0.10.0 — 2026-09-04
 
 ### Added

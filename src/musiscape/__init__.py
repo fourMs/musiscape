@@ -36,7 +36,7 @@ import importlib
 
 _SUBMODULES = (
     "categorize", "concert", "corpus", "examples", "features", "figures", "foreground", "io",
-    "music", "report", "sonic", "stability", "thumbnails", "timecourse", "transcribe",
+    "music", "report", "setlist", "sonic", "stability", "tagging", "thumbnails", "timecourse", "transcribe",
 )
 # Convenience verbs, mapped to the module that owns each. Same laziness, same reason.
 _VERBS = {
@@ -68,4 +68,4 @@ def __dir__():
     return sorted(__all__)
 
 
-__version__ = "0.10.0"
+__version__ = "0.11.0"

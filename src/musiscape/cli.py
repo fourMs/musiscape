@@ -39,6 +39,12 @@ def main(argv=None):
                    help="segment: shortest break that ends a song (s)")
     p.add_argument("--width", type=int, default=1920,
                    help="figures: export width in pixels (default 1920)")
+    p.add_argument("--method", default="heuristic", choices=["heuristic", "panns"],
+                   help="segment: region classifier; panns needs ambiscape[ml]")
+    p.add_argument("--device", default=None,
+                   help="segment --method panns: cpu, cuda or auto (default: ambiscape's, cpu)")
+    p.add_argument("--setlist", default=None,
+                   help="segment: running order (.docx table or .json) to align the songs to")
     args = p.parse_args(argv)
 
     # transcribe: piano note events per recording (optional extra), and the notes folded per second.
@@ -106,8 +112,21 @@ def main(argv=None):
 
         # what the recording was doing all evening, songs included
         from . import figures as afig
-        rmap = concert.map_regions(paths, songs=songs)
+        rmap = concert.map_regions(paths, songs=songs, method=args.method, device=args.device)
         (out / "regions.json").write_text(json.dumps(rmap["spans"], indent=1))
+        if args.setlist:
+            from . import setlist as sl
+            acts = sl.load_setlist(args.setlist)
+            pieces = [{"id": f"song-{s['index']}", "intro": None} for s in songs]
+            al = sl.align_setlist(pieces, acts)          # no transcripts here: running order decides
+            for s in songs:
+                j = al["assignments"][f"song-{s['index']}"]
+                s["setlist"] = None if j is None else {**acts[j], "title": sl.act_title(acts[j]),
+                                                         "match": al["how"][f"song-{s['index']}"]}
+            (out / "setlist.json").write_text(json.dumps(
+                {"acts": acts, "assignments": al["assignments"], "how": al["how"],
+                 "not_detected": [acts[j] for j in al["not_detected"]]}, indent=1, ensure_ascii=False))
+            manifest.write_text(json.dumps(songs, indent=1, ensure_ascii=False))
         afig.concert_timeline(rmap["spans"], rmap["total_s"],
                               out / "timeline.png", width_px=args.width,
                               title=root.name, level=rmap["level_db"])
