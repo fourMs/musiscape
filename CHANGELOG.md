@@ -22,7 +22,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/); the
 > and musiscape is free to ship. ambiscape still goes last.
 
 
-## Unreleased
+## 0.11.0 — 2026-09-12
 
 ### Added
 - `musiscape.tagging`: concert segmentation from AudioSet posteriors (PANNs through
