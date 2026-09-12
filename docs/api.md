@@ -61,3 +61,11 @@
 The verbs and options are in [Command line](cli.md); this is the entry point itself.
 
 ::: musiscape.cli
+
+## Concert segmentation from AudioSet tags
+
+::: musiscape.tagging
+
+## Setlist alignment
+
+::: musiscape.setlist
