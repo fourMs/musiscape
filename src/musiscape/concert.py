@@ -432,7 +432,8 @@ def _span_name(span: dict, start_time=None, suffix: str = ".flac") -> str:
 
 
 def map_regions(paths, sr: int = 22050, hop_s: float = 1.0,
-                min_s: float = 5.0, songs=None) -> dict:
+                min_s: float = 5.0, songs=None, method: str = "heuristic",
+                device=None) -> dict:
     """Label a whole concert, on the concert clock.
 
     Returns ``{"spans": [...], "total_s": float, "level_db": [...]}``, where
@@ -445,8 +446,27 @@ def map_regions(paths, sr: int = 22050, hop_s: float = 1.0,
     and the frame classifier does not, so without this a single song with a
     quiet bar in it is drawn as two or three. Everything outside the songs
     is still classified frame by frame.
+
+    ``method="panns"`` labels from AudioSet posteriors instead of spectral
+    flatness (:mod:`musiscape.tagging`, needs ``ambiscape[ml]``): slower, and
+    right about loud rock and noise music where the heuristic is not. Music
+    edges are then snapped to ``songs`` rather than replaced by them, and the
+    onsets are refined to where the sound starts.
     """
     paths = [Path(p) for p in paths]
+    if method == "panns":
+        from . import tagging
+        ys, level = [], []
+        for p in paths:
+            y, _sr = load_recording(p, sr=sr)
+            ys.append(np.asarray(y, dtype=np.float32))
+            level.extend(region_features(y, _sr, hop_s)["db"])
+        res = tagging.segment_concert(np.concatenate(ys), sr, songs=songs, device=device)
+        spans = [sp for sp in res["spans"] if sp["duration_s"] >= min_s] or res["spans"]
+        return {"spans": spans, "total_s": res["total_s"],
+                "level_db": [round(float(v), 2) for v in level]}
+    if method != "heuristic":
+        raise ValueError(f"method must be 'heuristic' or 'panns', not {method!r}")
     labels, level = [], []
     for p in paths:
         y, _sr = load_recording(p, sr=sr)
