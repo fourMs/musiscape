@@ -228,3 +228,12 @@ by running order. Give `musiscape.setlist.align_setlist` the transcribed
 introduction before each piece (`{"id": ..., "intro": text}`) and it matches the
 names the host says, ignores the ones the host thanks, and reports the acts that
 never happened.
+
+
+## The whole pipeline
+
+[avsegmenter](https://github.com/fourMs/avsegmenter) runs `tagging.segment_concert`, `setlist.align_setlist`
+and the per-piece descriptors here together with MGT's video analysis and ambiscape's tagging over a whole
+recording, and adds speaker turns, a web player with an advanced research view, and archival metadata
+(EBUCore, IIIF, PREMIS, JAMS, METS, BagIt). Start there for a concert or lecture video; use musiscape
+directly for collections and for the music descriptors.
