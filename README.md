@@ -73,6 +73,20 @@ per track, and `-k` fixes the number of categories.
 The toolbox is meant for quick visualisations and overviews. Combine it
 with listening.
 
+## What you can reuse
+
+Parts of the toolbox that work on their own:
+
+- the concert segmenter, which finds the songs inside a long recording, audio or video, and writes one file per song
+- the per-track feature extractor and its `features.json` cache, which any collection-level analysis can read
+- the album fingerprint bars and the PCA similarity landscape, as functions on a feature table
+- the thumbnail and poster renderers, seventeen card styles and two poster modes, for any set of audio files
+- the PDF report builder, a summary table and a page of figures per track
+
+## What it does not do
+
+musiscape gives overviews of collections and is meant to be combined with listening. It does not go deep on a single track; for that use [librosa](https://librosa.org/) directly or the MIR Toolbox. It does not describe places, which is ambiscape's subject, and it is not real-time.
+
 ## The four toolboxes
 
 Four packages from the [fourMs lab](https://github.com/fourMs) at the

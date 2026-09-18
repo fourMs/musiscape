@@ -262,6 +262,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/); the
 
 ## [Unreleased]
 
+- Documentation: README gains "What you can reuse" and "What it does not do", naming Kinetics Toolkit, PyEyesWeb and librosa as the tools for what this package leaves out (2026-09-18).
+
 ### Changed
 - **`features` documents two descriptors that answer when there is nothing to answer.** Neither is a
   bug and both mislead on any input that is not a music collection --- field recordings, broadcast
