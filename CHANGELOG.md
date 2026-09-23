@@ -22,6 +22,22 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/); the
 > and musiscape is free to ship. ambiscape still goes last.
 
 
+## [Unreleased]
+
+### Changed
+- `setlist.align_setlist` tells names from ordinary words. A title of three or more capitalised
+  words is a sentence and matches only as a phrase ("Machine Synchresis", never "Machine" or
+  "Information"); people still match on a surname alone. A name that two acts share, a candidate
+  who gives both the trial lecture and the introduction, names neither. The parts of a defence
+  ("First", "Second", "Trial", "Thesis", "Committee") and "University" and "Professor" are generic.
+  An introduction that names three or more acts is the programme being read out, the chair
+  listing the committee or the host running through the evening, and places the piece by running
+  order unless one of the names follows a hand-over cue, which now includes the English "I now call
+  upon", "invite", "please welcome" and "come forward". On three PhD defences of 2026 the old scoring
+  gave nearly every act of every part a score of 1.0 or more and assigned 6 of 12 parts wrongly;
+  the new one assigns all 12 as the chair called them. `plan_tokens(acts)` exposes the names an act
+  is recognised by, and `name_score(..., cues=False)` scores without the cue bonus.
+
 ## 0.11.0 — 2026-09-12
 
 ### Added

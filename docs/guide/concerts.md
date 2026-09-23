@@ -227,7 +227,12 @@ Medvirkende columns) and writes `setlist.json`. With only the audio the match is
 by running order. Give `musiscape.setlist.align_setlist` the transcribed
 introduction before each piece (`{"id": ..., "intro": text}`) and it matches the
 names the host says, ignores the ones the host thanks, and reports the acts that
-never happened.
+never happened. People match on a surname alone; a title of three or more
+capitalised words matches only as a phrase, so the ordinary words in it do not
+fire on any speech; a name two acts share names neither. An introduction that
+names three or more acts is the programme being read out and places the piece by
+running order, unless one name follows a hand-over cue ("vær så god", "I now call
+upon"), which marks the act that starts.
 
 
 ## The whole pipeline

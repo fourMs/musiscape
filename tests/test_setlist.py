@@ -44,6 +44,48 @@ def test_the_name_said_last_wins_over_an_earlier_mention():
     assert ACTS[r["assignments"]["p2"]]["nr"] == "4"
 
 
+DEFENCE = [
+    {"nr": "1", "act": "Trial lecture: Applying Michel Chion’s concept of synchresis in multimedia research", "performers": "Jinyue Guo"},
+    {"nr": "2", "act": "Thesis introduction: Machine Synchresis: Immersive and Embodied Audio–Video Information Retrieval", "performers": "Jinyue Guo"},
+    {"nr": "3", "act": "First opponent", "performers": "Antonio Camurri, University of Genova"},
+    {"nr": "4", "act": "Second opponent", "performers": "Annamaria Mesaros, Tampere University"},
+]
+
+
+def test_a_long_title_matches_as_a_phrase_and_not_word_by_word():
+    toks = sl.plan_tokens(DEFENCE)
+    assert sl.name_score("we did not include embodied cognition or information about the machine", DEFENCE[1], toks[1])[0] < 0.8
+    assert sl.name_score("submitted a thesis entitled Machine Synchresis, Immersive and Embodied", DEFENCE[1], toks[1])[0] >= 0.8
+
+
+def test_a_name_two_acts_share_names_neither():
+    toks = sl.plan_tokens(DEFENCE)
+    assert "jinyue" not in toks[0][0] and "guo" not in toks[1][0]
+    assert sl.name_score("I now invite the candidate, Jinyue Guo, to the stage", DEFENCE[0], toks[0])[0] < 0.8
+
+
+def test_the_parts_of_a_defence_are_not_names():
+    toks = sl.plan_tokens(DEFENCE)
+    assert sl.name_score("so the first aspect here is the second one of the university", DEFENCE[2], toks[2])[0] < 0.8
+
+
+def test_reading_out_the_committee_names_no_act():
+    committee = ("The Faculty appointed the following evaluation committee: Professor Antonio Camurri, University of "
+                 "Genova, and Assistant Professor Annamaria Mesaros, Tampere University. The trial lecture on Michel Chion "
+                 "was found satisfactory. The candidate will now present the thesis.")
+    r = sl.align_setlist([{"id": "p1", "intro": "I now invite the candidate to give the trial lecture on Michel Chion"},
+                          {"id": "p2", "intro": committee}], DEFENCE)
+    assert r["assignments"] == {"p1": 0, "p2": 1} and r["how"]["p2"] == "order"
+
+
+def test_a_hand_over_cue_picks_the_act_out_of_a_recap():
+    recap = ("Earlier today the candidate gave the trial lecture on Michel Chion and presented the thesis Machine "
+             "Synchresis. The second opponent will be Annamaria Mesaros. I now call upon the first opponent, "
+             "Professor Antonio Camurri, to come forward.")
+    r = sl.align_setlist([{"id": "p3", "intro": recap}], DEFENCE)
+    assert r["assignments"] == {"p3": 2} and r["how"]["p3"] == "name"
+
+
 def test_act_title_cleans_the_work_cell():
     assert sl.act_title(ACTS[6]) == "7. Sound of You, What a Shame – Jørgen Berg Hansen, Maria Kverno"
     assert sl.act_title({"nr": "9", "act": "Band", "work": "Låtene vi skal spille er: / A, / B", "performers": "–"}) == "9. A / B"
