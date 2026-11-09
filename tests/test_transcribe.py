@@ -33,7 +33,7 @@ def test_availability_is_a_bool():
 
 
 @pytest.mark.skipif(not transcribe.transcription_available() or
-                    not os.path.isdir(os.path.expanduser("~/piano_transcription_inference_data")),
+                    not os.path.isfile(__import__("musiscape.transcribe", fromlist=["checkpoint_path"]).checkpoint_path()),
                     reason="optional transcription package or its checkpoint not present")
 def test_transcribe_recovers_a_piano_like_tone():
     sr = 16000

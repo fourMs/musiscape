@@ -17,11 +17,22 @@ three takes where the onset detector had found 32, 78 and 83, because chords and
 passages had been merged into single onsets.
 
 The model is an optional dependency: ``pip install "musiscape[transcribe]"``. Its checkpoint
-(about 170 MB) is downloaded on first use to ``~/piano_transcription_inference_data``.
+(about 170 MB) is downloaded on first use to ``~/.cache/piano_transcription/``, or to the path in the
+environment variable ``MUSISCAPE_PIANO_CHECKPOINT``, rather than the library's default in the home folder.
 """
 from __future__ import annotations
 
+import os
+
 import numpy as np
+
+CHECKPOINT_NAME = "note_F1=0.9677_pedal_F1=0.9186.pth"
+
+
+def checkpoint_path() -> str:
+    """Where the model's weights live: MUSISCAPE_PIANO_CHECKPOINT, else ~/.cache/piano_transcription/."""
+    return os.environ.get("MUSISCAPE_PIANO_CHECKPOINT") or os.path.join(
+        os.path.expanduser("~/.cache/piano_transcription"), CHECKPOINT_NAME)
 
 __all__ = ["transcribe_piano", "notes_per_second", "transcription_available"]
 
@@ -72,7 +83,7 @@ def transcribe_piano(y, sr: int, midi_path=None, device: str = "cpu", threads: i
     y = np.asarray(y, dtype=np.float32)
     if sr != model_sr:
         y = librosa.resample(y, orig_sr=sr, target_sr=model_sr)
-    tr = PianoTranscription(device=device, checkpoint_path=None)
+    tr = PianoTranscription(device=device, checkpoint_path=checkpoint_path())
     out = tr.transcribe(y, midi_path if midi_path is not None else None)
     events = out.get("est_note_events", [])
     if not events:
